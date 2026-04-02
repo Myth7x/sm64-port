@@ -26,6 +26,10 @@
 #include "gfx_screen_config.h"
 #include "gfx_pc.h"
 
+#include "imgui.h"
+#include "imgui_impl_win32.h"
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 #define DECLARE_GFX_DXGI_FUNCTIONS
 #include "gfx_dxgi.h"
 
@@ -255,6 +259,10 @@ static void onkeyup(WPARAM w_param, LPARAM l_param) {
 }
 
 static LRESULT CALLBACK gfx_dxgi_wnd_proc(HWND h_wnd, UINT message, WPARAM w_param, LPARAM l_param) {
+    if (ImGui_ImplWin32_WndProcHandler(h_wnd, message, w_param, l_param)) {
+        return 0;
+    }
+
     switch (message) {
         case WM_SIZE:
             gfx_dxgi_on_resize();

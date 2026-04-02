@@ -33,7 +33,7 @@
 #define SRC_SURF_MIN_NORMAL  0.05f
 #define SRC_EXTRA_GRAVITY   0.8f
 #define SRC_TERMINAL_VEL   -160.0f
-#define SRC_NOCLIP_SPEED    140.0f
+#define SRC_NOCLIP_SPEED    40.0f
 #define BHOP_WINDOW         4
 #define SPEED_EPSILON       0.01f
 

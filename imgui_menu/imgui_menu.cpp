@@ -3,6 +3,7 @@
 #include <cmath>
 #include "imgui.h"
 #include "imgui_menu.h"
+#include "level_select_menu.h"
 
 #ifndef _LANGUAGE_C
 #define _LANGUAGE_C
@@ -87,6 +88,10 @@ static void draw_info_box(void) {
     ImGui::Text("NOD  S:%-5d D:%d", gNumStaticSurfaceNodes, dyn_nodes);
     ImGui::Text("POOL %d",           gSurfacesAllocated);
     ImGui::Text("VTX  %d",           gNumStaticSurfaces * 3);
+    ImGui::Spacing();
+    if (ImGui::Button("Open Level Select")) {
+        level_select_menu_open();
+    }
     ImGui::End();
 }
 
@@ -128,6 +133,7 @@ static void draw_loading_modal(void) {
 void imgui_menu_compose_frame(void) {
     draw_info_box();
     draw_loading_modal();
+    level_select_menu_compose_frame();
 }
 
 void imgui_menu_render(void) {
