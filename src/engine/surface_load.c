@@ -614,6 +614,7 @@ u32 get_area_terrain_size(s16 *data) {
 #endif
 
 
+#include <stdio.h>
 /**
  * Process the level file, loading in vertices, surfaces, some objects, and environmental
  * boxes (water, gas, JRB fog).
@@ -651,12 +652,16 @@ void load_area_terrain(s16 index, s16 *data, s8 *surfaceRooms, s16 *macroObjects
 
         if (TERRAIN_LOAD_IS_SURFACE_TYPE_LOW(terrainLoadType)) {
             load_static_surfaces(&data, vertexData, terrainLoadType, &surfaceRooms);
+            fprintf(stderr, "Loaded %d surfaces of type %d\n", gSurfacesAllocated, terrainLoadType);
         } else if (terrainLoadType == TERRAIN_LOAD_VERTICES) {
             vertexData = read_vertex_data(&data);
+            fprintf(stderr, "Loaded %d vertices\n", vertexData[-1]);
         } else if (terrainLoadType == TERRAIN_LOAD_OBJECTS) {
             spawn_special_objects(index, &data);
+            fprintf(stderr, "Loaded special objects\n");
         } else if (terrainLoadType == TERRAIN_LOAD_ENVIRONMENT) {
             load_environmental_regions(&data);
+            fprintf(stderr, "Loaded %d environmental regions\n", gEnvironmentRegions[0]);
         } else if (terrainLoadType == TERRAIN_LOAD_CONTINUE) {
             continue;
         } else if (terrainLoadType == TERRAIN_LOAD_END) {

@@ -29,6 +29,14 @@
 #define DECLARE_GFX_DXGI_FUNCTIONS
 #include "gfx_dxgi.h"
 
+#undef near
+#undef far
+extern "C" {
+#include "../mouse.h"
+#include "../../game/fps_mode.h"
+#include "../../game/fps_camera.h"
+}
+
 #define WINCLASS_NAME L"N64GAME"
 #define GFX_API_NAME "DirectX"
 
@@ -193,6 +201,35 @@ static void toggle_borderless_window_full_screen(bool enable, bool call_callback
     }
 }
 
+static bool dxgi_do_capture(void) {
+    ShowCursor(FALSE);
+    SetCapture(dxgi.h_wnd);
+    RECT r;
+    GetClientRect(dxgi.h_wnd, &r);
+    MapWindowPoints(dxgi.h_wnd, NULL, (POINT *)&r, 2);
+    ClipCursor(&r);
+    return true;
+}
+
+static void dxgi_do_release(void) {
+    ClipCursor(NULL);
+    ReleaseCapture();
+    ShowCursor(TRUE);
+}
+
+static bool s_raw_input_registered = false;
+
+static void register_raw_mouse_dxgi(HWND h_wnd) {
+    if (s_raw_input_registered) return;
+    RAWINPUTDEVICE rid;
+    rid.usUsagePage = 0x01;
+    rid.usUsage     = 0x02;
+    rid.dwFlags     = RIDEV_INPUTSINK;
+    rid.hwndTarget  = h_wnd;
+    RegisterRawInputDevices(&rid, 1, sizeof(rid));
+    s_raw_input_registered = true;
+}
+
 static void gfx_dxgi_on_resize(void) {
     if (dxgi.swap_chain.Get() != nullptr) {
         gfx_get_current_rendering_api()->on_resize();
@@ -238,7 +275,43 @@ static LRESULT CALLBACK gfx_dxgi_wnd_proc(HWND h_wnd, UINT message, WPARAM w_par
                 dxgi.on_all_keys_up();
             }
             break;
+        case WM_INPUT: {
+            if (!is_mouse_captured()) break;
+            UINT size = 0;
+            GetRawInputData((HRAWINPUT)l_param, RID_INPUT, NULL, &size, sizeof(RAWINPUTHEADER));
+            if (size == 0 || size > 512) break;
+            char buf[512];
+            if (GetRawInputData((HRAWINPUT)l_param, RID_INPUT, buf, &size, sizeof(RAWINPUTHEADER)) != size)
+                break;
+            RAWINPUT *ri = (RAWINPUT *)buf;
+            if (ri->header.dwType == RIM_TYPEMOUSE &&
+                !(ri->data.mouse.usFlags & MOUSE_MOVE_ABSOLUTE)) {
+                int dx = (int)ri->data.mouse.lLastX;
+                int dy = (int)ri->data.mouse.lLastY;
+                if (dx || dy) mouse_accum(dx, dy);
+            }
+            break;
+        }
+        case WM_SETFOCUS:
+            if (gFPSMode || is_mouse_captured())
+                capture_mouse();
+            break;
+        case WM_KILLFOCUS:
+            if (dxgi.on_all_keys_up != nullptr)
+                dxgi.on_all_keys_up();
+            release_mouse();
+            break;
+        case WM_LBUTTONDOWN:
+        case WM_RBUTTONDOWN:
+        case WM_MBUTTONDOWN:
+            capture_mouse();
+            break;
         case WM_KEYDOWN:
+            if (!(l_param & (1 << 30))) {
+                if (w_param == 'F') { fps_toggle_mode(); break; }
+                if (w_param == 'V') { fps_toggle_noclip(); break; }
+                if (w_param == VK_ESCAPE) { release_mouse(); break; }
+            }
             onkeydown(w_param, l_param);
             break;
         case WM_KEYUP:
@@ -305,6 +378,10 @@ static void gfx_dxgi_init(const char *game_name, bool start_in_fullscreen) {
 
     ShowWindow(dxgi.h_wnd, SW_SHOW);
     UpdateWindow(dxgi.h_wnd);
+
+    register_raw_mouse_dxgi(dxgi.h_wnd);
+    mouse_register_capture_callbacks(dxgi_do_capture, dxgi_do_release);
+    capture_mouse();
 
     if (start_in_fullscreen) {
         toggle_borderless_window_full_screen(true, false);

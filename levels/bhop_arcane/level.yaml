@@ -1,0 +1,11 @@
+short-name: bhop_arcane
+full-name: bhop_arcane
+texture-file: []
+area-count: 1
+objects: []
+shared-path: []
+skybox-bin: water
+texture-bin: generic
+effects: false
+actor-bins: []
+common-bin: []

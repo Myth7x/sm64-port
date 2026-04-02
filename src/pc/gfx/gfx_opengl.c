@@ -15,10 +15,11 @@
 #endif
 
 #if FOR_WINDOWS
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <windows.h>
+#include <GL/gl.h>
 #include <GL/glew.h>
-#include "SDL.h"
-#define GL_GLEXT_PROTOTYPES 1
-#include "SDL_opengl.h"
 #else
 #include <SDL2/SDL.h>
 #define GL_GLEXT_PROTOTYPES 1

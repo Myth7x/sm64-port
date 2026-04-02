@@ -55,3 +55,5 @@ STUB_LEVEL(  "",               LEVEL_UNKNOWN_35,       COURSE_NONE,             
 DEFINE_LEVEL("DONKEY % SLID2", LEVEL_TTM,              COURSE_TTM,      ttm,              mountain, 15000,    0x08, 0x08, 0x08, _,         _)
 STUB_LEVEL(  "",               LEVEL_UNKNOWN_37,       COURSE_NONE,                                 20000,    0x00, 0x00, 0x00, _,         _)
 STUB_LEVEL(  "",               LEVEL_UNKNOWN_38,       COURSE_NONE,                                 20000,    0x00, 0x00, 0x00, sDynUnk38, _)
+DEFINE_LEVEL("BHOP_FUCKAPOY2", LEVEL_BHOP_FUCKAPOY2,   COURSE_NONE, bhop_fuckapoy2, outside, 20000,    0x00, 0x00, 0x00, _,         _)
+DEFINE_LEVEL("BHOP_ARCANE",     LEVEL_BHOP_ARCANE,      COURSE_NONE, bhop_arcane,    outside, 20000,    0x00, 0x00, 0x00, _,         _)

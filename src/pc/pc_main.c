@@ -35,6 +35,7 @@ static void crash_handler(int sig) {
 #include "gfx/gfx_dxgi.h"
 #include "gfx/gfx_glx.h"
 #include "gfx/gfx_sdl.h"
+#include "gfx/gfx_wgl.h"
 #include "gfx/gfx_dummy.h"
 
 #include "audio/audio_api.h"
@@ -158,7 +159,16 @@ static void on_fullscreen_changed(bool is_now_fullscreen) {
     configFullscreen = is_now_fullscreen;
 }
 
+#include <stdarg.h>
+#include <windows.h>
 void main_func(void) {
+    // alloc console on Windows when running as a GUI app, so that we can print debug info to it
+#if defined(_WIN32) || defined(_WIN64)
+    AllocConsole();
+    freopen("CONOUT$", "w", stdout);
+    freopen("CONOUT$", "w", stderr);
+#endif
+
     signal(SIGSEGV, crash_handler);
 #ifdef SIGBUS
     signal(SIGBUS, crash_handler);
@@ -188,14 +198,8 @@ void main_func(void) {
     wm_api = &gfx_dxgi_api;
 #elif defined(ENABLE_OPENGL)
     rendering_api = &gfx_opengl_api;
-    #if defined(__linux__) || defined(__BSD__)
-        // Prefer GLX on X11, but fall back to SDL2 when running under Wayland
-        // (XWayland's GLX implementation often rejects context creation).
-        if (getenv("WAYLAND_DISPLAY") != NULL) {
-            wm_api = &gfx_sdl;
-        } else {
-            wm_api = &gfx_glx;
-        }
+    #if defined(_WIN32)
+        wm_api = &gfx_wgl;
     #else
         wm_api = &gfx_sdl;
     #endif

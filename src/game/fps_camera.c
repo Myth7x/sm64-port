@@ -9,14 +9,15 @@
 #include "fps_mode.h"
 #include "fps_camera.h"
 #include "print.h"
+#include "area.h"
+#include "level_table.h"
 
 #include "../pc/mouse.h"
 
 #ifndef TARGET_N64
 static unsigned long long s_lastPerfCount;
-#else
-OSTime gLastOSTime;
 #endif
+static OSTime gLastOSTime;
 bool gFPSMode    = TRUE;
 bool gNoclipMode = FALSE;
 
@@ -66,7 +67,11 @@ void fps_camera_process_mouse(struct Camera *c) {
     }
 #ifndef TARGET_N64
     if (!is_mouse_captured())
+    {
+        
         capture_mouse();
+        
+    }
 #endif
 
     int dx = gMouseDeltaX;
@@ -138,7 +143,22 @@ void fps_camera_update(struct Camera *c) {
  * Text is drawn in the bottom-left corner, away from normal HUD elements.
  * ----------------------------------------------------------------------- */
 
-OSTime gLastOSTime;
+#define STUB_LEVEL(name, _1, _2, _3, _4, _5, _6, _7, _8) name,
+#define DEFINE_LEVEL(name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10) name,
+static const char *sLevelNames[] = {
+    "NONE",
+    #include "levels/level_defines.h"
+};
+#undef STUB_LEVEL
+#undef DEFINE_LEVEL
+
+const char *level_get_string(void) {
+    s16 num = gCurrLevelNum;
+    if (num <= LEVEL_NONE || num >= LEVEL_COUNT)
+        return "NONE";
+    return sLevelNames[num];
+}
+
 void fps_draw_hud(void) {
     if (!gFPSMode || gMarioState == NULL) {
         return;
@@ -148,11 +168,24 @@ void fps_draw_hud(void) {
     f32 *pos = gMarioState->pos;
     s32 hspeed = (s32)(sqrtf(vel[0] * vel[0] + vel[2] * vel[2]) * 30.0f);
 
+    print_text(10, 300, level_get_string());
     print_text_fmt_int(20, 68, "SPD %d", hspeed);
-    print_text_fmt_int(20,  52, "X %d", (s32)pos[0]);
-    print_text_fmt_int(100, 52, "Y %d", (s32)pos[1]);
-    print_text_fmt_int(180, 52, "Z %d", (s32)pos[2]);
+    print_text_fmt_int(20,  52, "POS %d", (s32)pos[0]);
+    print_text_fmt_int(100, 52, "%d", (s32)pos[1]);
+    print_text_fmt_int(180, 52, "%d", (s32)pos[2]);
 
+#ifndef TARGET_N64
+    unsigned long long now  = pc_perf_counter();
+    unsigned long long freq = pc_perf_freq();
+    if (s_lastPerfCount != 0 && freq != 0) {
+        unsigned long long diff = now - s_lastPerfCount;
+        s32 fps = (diff > 0) ? (s32)(freq / diff) : 0;
+        print_text_fmt_int(20, 36, "FPS %d", fps);
+    } else {
+        print_text_fmt_int(20, 36, "FPS N/A", 0);
+    }
+    s_lastPerfCount = now;
+#else
     OSTime newTime = osGetTime();
     if (gLastOSTime != 0) {
         s32 ms = (s32)((newTime - gLastOSTime) / 46875LL);
@@ -161,4 +194,5 @@ void fps_draw_hud(void) {
         print_text_fmt_int(20, 36, "FPS N/A", 0);
     }
     gLastOSTime = newTime;
+#endif
 }

@@ -2,18 +2,7 @@
 
 #if defined(ENABLE_OPENGL)
 
-#ifdef __MINGW32__
-#define FOR_WINDOWS 1
-#else
-#define FOR_WINDOWS 0
-#endif
-
-#if FOR_WINDOWS
-#include <GL/glew.h>
-#include "SDL.h"
-#define GL_GLEXT_PROTOTYPES 1
-#include "SDL_opengl.h"
-#elif defined(__linux__) || defined(__BSD__)
+#if defined(__linux__) || defined(__BSD__)
 #include <SDL2/SDL.h>
 #define GL_GLEXT_PROTOTYPES 1
 #include <GL/gl.h>
@@ -21,7 +10,7 @@
 #else
 #include <SDL2/SDL.h>
 #define GL_GLEXT_PROTOTYPES 1
-#include <SDL2/SDL_opengles2.h>
+#include <SDL2/SDL_opengl.h>
 #endif
 
 #include "gfx_window_manager_api.h"
@@ -29,6 +18,7 @@
 
 /* FPS mode: mouse capture and toggle callbacks */
 #include "../mouse.h"
+#include "../../game/fps_mode.h"
 #include "../../game/fps_camera.h"
 
 #define GFX_API_NAME "SDL2 - OpenGL"
@@ -44,7 +34,7 @@ static bool (*on_key_down_callback)(int scancode);
 static bool (*on_key_up_callback)(int scancode);
 static void (*on_all_keys_up_callback)(void);
 
-static void sdl_do_capture(void);
+static bool sdl_do_capture(void);
 static void sdl_do_release(void);
 
 const SDL_Scancode windows_scancode_table[] =
@@ -177,7 +167,7 @@ static void gfx_sdl_init(const char *game_name, bool start_in_fullscreen) {
     int len = sprintf(title, "%s (%s)", game_name, GFX_API_NAME);
 
     wnd = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-            window_width, window_height, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_INPUT_GRABBED);
+            window_width, window_height, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
 
     if (start_in_fullscreen) {
         set_fullscreen(true, false);
@@ -199,24 +189,21 @@ static void gfx_sdl_init(const char *game_name, bool start_in_fullscreen) {
     }
 
     for (size_t i = 0; i < sizeof(scancode_rmapping_nonextended) / sizeof(scancode_rmapping_nonextended[0]); i++) {
-        inverted_scancode_table[scancode_rmapping_extended[i][0]] = inverted_scancode_table[scancode_rmapping_extended[i][1]];
-        inverted_scancode_table[scancode_rmapping_extended[i][1]] += 0x100;
+        inverted_scancode_table[scancode_rmapping_nonextended[i][0]] = inverted_scancode_table[scancode_rmapping_nonextended[i][1]];
+        inverted_scancode_table[scancode_rmapping_nonextended[i][1]] += 0x100;
     }
 
     SDL_RaiseWindow(wnd);
-    SDL_PumpEvents();
     mouse_register_capture_callbacks(sdl_do_capture, sdl_do_release);
     capture_mouse();
 }
 
-static void sdl_do_capture(void) {
-    SDL_SetWindowGrab(wnd, SDL_TRUE);
-    SDL_SetRelativeMouseMode(SDL_TRUE);
+static bool sdl_do_capture(void) {
+    return SDL_SetRelativeMouseMode(SDL_TRUE) == 0;
 }
 
 static void sdl_do_release(void) {
     SDL_SetRelativeMouseMode(SDL_FALSE);
-    SDL_SetWindowGrab(wnd, SDL_FALSE);
 }
 
 static void gfx_sdl_set_fullscreen_changed_callback(void (*on_fullscreen_changed)(bool is_now_fullscreen)) {
@@ -296,7 +283,8 @@ static void gfx_sdl_handle_events(void) {
                 gfx_sdl_onkeyup(event.key.keysym.scancode);
                 break;
             case SDL_MOUSEMOTION:
-                mouse_accum(event.motion.xrel, event.motion.yrel);
+                if (is_mouse_captured())
+                    mouse_accum(event.motion.xrel, event.motion.yrel);
                 break;
             case SDL_MOUSEBUTTONDOWN:
                 /* Re-acquire mouse capture when the user clicks into the window. */
@@ -309,12 +297,12 @@ static void gfx_sdl_handle_events(void) {
                     window_height = event.window.data2;
                 }
                 if (event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
-                    if (is_mouse_captured()) {
+                    if (gFPSMode || is_mouse_captured()) {
                         capture_mouse();
                     }
                 }
                 if (event.window.event == SDL_WINDOWEVENT_FOCUS_LOST) {
-                    sdl_do_release();
+                    release_mouse();
                 }
                 break;
             case SDL_QUIT:

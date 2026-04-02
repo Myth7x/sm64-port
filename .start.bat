@@ -1,0 +1,1 @@
+start build/us_pc/sm64.us.exe
