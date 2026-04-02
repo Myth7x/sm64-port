@@ -44,6 +44,9 @@ static bool (*on_key_down_callback)(int scancode);
 static bool (*on_key_up_callback)(int scancode);
 static void (*on_all_keys_up_callback)(void);
 
+static void sdl_do_capture(void);
+static void sdl_do_release(void);
+
 const SDL_Scancode windows_scancode_table[] =
 { 
     /*	0						1							2							3							4						5							6							7 */
@@ -174,7 +177,7 @@ static void gfx_sdl_init(const char *game_name, bool start_in_fullscreen) {
     int len = sprintf(title, "%s (%s)", game_name, GFX_API_NAME);
 
     wnd = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-            window_width, window_height, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+            window_width, window_height, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_INPUT_GRABBED);
 
     if (start_in_fullscreen) {
         set_fullscreen(true, false);
@@ -200,8 +203,20 @@ static void gfx_sdl_init(const char *game_name, bool start_in_fullscreen) {
         inverted_scancode_table[scancode_rmapping_extended[i][1]] += 0x100;
     }
 
-    /* Lock and hide the OS cursor for FPS mouse-look. */
+    SDL_RaiseWindow(wnd);
+    SDL_PumpEvents();
+    mouse_register_capture_callbacks(sdl_do_capture, sdl_do_release);
+    capture_mouse();
+}
+
+static void sdl_do_capture(void) {
+    SDL_SetWindowGrab(wnd, SDL_TRUE);
     SDL_SetRelativeMouseMode(SDL_TRUE);
+}
+
+static void sdl_do_release(void) {
+    SDL_SetRelativeMouseMode(SDL_FALSE);
+    SDL_SetWindowGrab(wnd, SDL_FALSE);
 }
 
 static void gfx_sdl_set_fullscreen_changed_callback(void (*on_fullscreen_changed)(bool is_now_fullscreen)) {
@@ -270,9 +285,9 @@ static void gfx_sdl_handle_events(void) {
                 if (event.key.keysym.scancode == SDL_SCANCODE_V) {
                     fps_toggle_noclip();
                 }
-                /* Escape – release mouse capture when not in FPS mode */
+                /* Escape – release mouse capture */
                 if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
-                    SDL_SetRelativeMouseMode(SDL_FALSE);
+                    release_mouse();
                     break;
                 }
                 gfx_sdl_onkeydown(event.key.keysym.scancode);
@@ -284,15 +299,22 @@ static void gfx_sdl_handle_events(void) {
                 mouse_accum(event.motion.xrel, event.motion.yrel);
                 break;
             case SDL_MOUSEBUTTONDOWN:
-                /* Re-acquire relative mouse mode when the user clicks back into
-                 * the window after Escape released the cursor. */
-                SDL_SetRelativeMouseMode(SDL_TRUE);
+                /* Re-acquire mouse capture when the user clicks into the window. */
+                capture_mouse();
                 break;
 #endif
             case SDL_WINDOWEVENT:
                 if (event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
                     window_width = event.window.data1;
                     window_height = event.window.data2;
+                }
+                if (event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
+                    if (is_mouse_captured()) {
+                        capture_mouse();
+                    }
+                }
+                if (event.window.event == SDL_WINDOWEVENT_FOCUS_LOST) {
+                    sdl_do_release();
                 }
                 break;
             case SDL_QUIT:

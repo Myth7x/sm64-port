@@ -20,6 +20,7 @@
 #include "object_helpers.h"
 #include "save_file.h"
 #include "seq_ids.h"
+#include "fps_mode.h"
 #include "sm64.h"
 #include "sound_init.h"
 #include "rumble_init.h"
@@ -1776,9 +1777,16 @@ void check_kick_or_punch_wall(struct MarioState *m) {
     }
 }
 
-void mario_process_interactions(struct MarioState *m) {
+void mario_process_interactions(int fps_mode, struct MarioState *m) {
     sDelayInvincTimer = FALSE;
     sInvulnerable = (m->action & ACT_FLAG_INVULNERABLE) || m->invincTimer != 0;
+
+    if (fps_mode == 1) { // int as boolean here for testing only
+        // if fps mode, we have first person camera
+        // so we need to increase the hitbox size of mario, to not have the camera clip through walls
+        m->marioObj->hitboxRadius = 80;
+        m->marioObj->hitboxHeight = 160; // todo, get fps camera height and use that instead of hardcoding 160
+    }
 
     if (!(m->action & ACT_FLAG_INTANGIBLE) && m->collidedObjInteractTypes != 0) {
         s32 i;

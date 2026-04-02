@@ -31,9 +31,9 @@
 #define SRC_BHOP_SPEED_CAP  120.0f
 #define SRC_WALKABLE_NORMAL  0.7f
 #define SRC_SURF_MIN_NORMAL  0.05f
-#define SRC_EXTRA_GRAVITY   0.0f
+#define SRC_EXTRA_GRAVITY   0.8f
 #define SRC_TERMINAL_VEL   -160.0f
-#define SRC_NOCLIP_SPEED    40.0f
+#define SRC_NOCLIP_SPEED    140.0f
 #define BHOP_WINDOW         4
 #define SPEED_EPSILON       0.01f
 
@@ -190,6 +190,20 @@ static void src_clamp_horizontal_speed(struct MarioState *m, f32 maxSpeed) {
  * Bhop: if A was buffered during airtime, jump immediately on landing WITHOUT
  * first applying friction, preserving the full horizontal speed from the air.
  */
+#include <stdio.h>
+#include <windows.h>
+static void windows_show_message_box(const char *title, const char *message) {
+#if defined(_WIN32) || defined(_WIN64)
+    HWND consoleWindow = GetConsoleWindow();
+    if (consoleWindow != NULL) {
+        MessageBoxA(consoleWindow, message, title, MB_OK | MB_ICONINFORMATION);
+    } else {
+        MessageBoxA(NULL, message, title, MB_OK | MB_ICONINFORMATION);
+    }
+#else
+    fprintf(stderr, "%s: %s\n", title, message);
+#endif
+}
 static void src_ground_step(struct MarioState *m) {
     f32 mag = m->intendedMag / 32.0f;
     f32 wishDirX = sins(m->intendedYaw);
@@ -220,6 +234,7 @@ static void src_ground_step(struct MarioState *m) {
         if (m->vel[1] < SRC_TERMINAL_VEL) m->vel[1] = SRC_TERMINAL_VEL;
         perform_air_step(m, 0);
         sWasGrounded = FALSE;
+        //windows_show_message_box("Bhop!", "You performed a bunny hop!");
         return;
     }
 

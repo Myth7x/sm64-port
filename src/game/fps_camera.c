@@ -12,6 +12,11 @@
 
 #include "../pc/mouse.h"
 
+#ifndef TARGET_N64
+static unsigned long long s_lastPerfCount;
+#else
+OSTime gLastOSTime;
+#endif
 bool gFPSMode    = TRUE;
 bool gNoclipMode = FALSE;
 
@@ -30,6 +35,12 @@ s16 gFpsPitch = 0;
 
 void fps_toggle_mode(void) {
     gFPSMode = !gFPSMode;
+#ifndef TARGET_N64
+    if (gFPSMode)
+        capture_mouse();
+    else
+        release_mouse();
+#endif
 }
 
 void fps_toggle_noclip(void) {
@@ -53,6 +64,10 @@ void fps_camera_process_mouse(struct Camera *c) {
     if (!gFPSMode) {
         return;
     }
+#ifndef TARGET_N64
+    if (!is_mouse_captured())
+        capture_mouse();
+#endif
 
     int dx = gMouseDeltaX;
     int dy = gMouseDeltaY;
@@ -122,6 +137,8 @@ void fps_camera_update(struct Camera *c) {
  * Displays horizontal speed in units/second and the player's XYZ position.
  * Text is drawn in the bottom-left corner, away from normal HUD elements.
  * ----------------------------------------------------------------------- */
+
+OSTime gLastOSTime;
 void fps_draw_hud(void) {
     if (!gFPSMode || gMarioState == NULL) {
         return;
@@ -132,7 +149,16 @@ void fps_draw_hud(void) {
     s32 hspeed = (s32)(sqrtf(vel[0] * vel[0] + vel[2] * vel[2]) * 30.0f);
 
     print_text_fmt_int(20, 68, "SPD %d", hspeed);
-    print_text_fmt_int(20, 52, "X   %d", (s32)pos[0]);
-    print_text_fmt_int(20, 36, "Y   %d", (s32)pos[1]);
-    print_text_fmt_int(20, 20, "Z   %d", (s32)pos[2]);
+    print_text_fmt_int(20,  52, "X %d", (s32)pos[0]);
+    print_text_fmt_int(100, 52, "Y %d", (s32)pos[1]);
+    print_text_fmt_int(180, 52, "Z %d", (s32)pos[2]);
+
+    OSTime newTime = osGetTime();
+    if (gLastOSTime != 0) {
+        s32 ms = (s32)((newTime - gLastOSTime) / 46875LL);
+        print_text_fmt_int(20, 36, "FPS %d", ms > 0 ? 1000 / ms : 0);
+    } else {
+        print_text_fmt_int(20, 36, "FPS N/A", 0);
+    }
+    gLastOSTime = newTime;
 }

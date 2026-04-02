@@ -1723,7 +1723,7 @@ s32 execute_mario_action(UNUSED struct Object *o) {
         mario_reset_bodystate(gMarioState);
         update_mario_inputs(gMarioState);        /* intendedYaw now uses correct c->yaw */
         mario_handle_special_floors(gMarioState);
-        mario_process_interactions(gMarioState); /* coins/enemies/etc. work in FPS mode */
+        mario_process_interactions(gFPSMode, gMarioState); /* coins/enemies/etc. work in FPS mode */
 
         /* --- FPS Stage 2: Source physics replaces the SM64 action dispatch loop --- */
         if (gFPSMode) {
