@@ -1,0 +1,11 @@
+short-name: Surf_Mesa
+full-name: Surf_Mesa
+texture-file: []
+area-count: 1
+objects: []
+shared-path: []
+skybox-bin: water
+texture-bin: generic
+effects: false
+actor-bins: []
+common-bin: []

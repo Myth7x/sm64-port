@@ -205,6 +205,7 @@ static LRESULT CALLBACK wgl_wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) 
             set_fullscreen(!wgl.is_fullscreen, true);
             break;
         }
+        if (wp == 'B') fps_teleport_to_map_center();
         if (wp == 'F') fps_toggle_mode();
         if (wp == 'V') fps_toggle_noclip();
         if (wp == VK_ESCAPE) { release_mouse(); break; }

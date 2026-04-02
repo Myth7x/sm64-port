@@ -9,6 +9,7 @@
 #include "engine/graph_node.h"
 #include "engine/math_util.h"
 #include "engine/surface_collision.h"
+#include "engine/surface_load.h"
 #include "game_init.h"
 #include "interaction.h"
 #include "level_table.h"
@@ -1369,7 +1370,61 @@ void update_mario_geometry_inputs(struct MarioState *m) {
         }
 
     } else {
-        level_trigger_warp(m, WARP_OP_DEATH);
+        struct Surface *bestSurf = NULL;
+        f32 bestDist = 1e30f;
+        f32 bestX = 0.0f, bestY = 0.0f, bestZ = 0.0f;
+        s32 ci, cj;
+        for (ci = 0; ci < NUM_CELLS; ci++) {
+            for (cj = 0; cj < NUM_CELLS; cj++) {
+                struct SurfaceNode *node;
+                for (node = gStaticSurfacePartition[ci][cj][SPATIAL_PARTITION_FLOORS].next;
+                     node != NULL; node = node->next) {
+                    struct Surface *s = node->surface;
+                    f32 cx = (s->vertex1[0] + s->vertex2[0] + s->vertex3[0]) / 3.0f;
+                    f32 cy = (s->vertex1[1] + s->vertex2[1] + s->vertex3[1]) / 3.0f;
+                    f32 cz = (s->vertex1[2] + s->vertex2[2] + s->vertex3[2]) / 3.0f;
+                    f32 dx = cx - m->pos[0];
+                    f32 dz = cz - m->pos[2];
+                    f32 dist = dx * dx + dz * dz;
+                    if (dist < bestDist) {
+                        bestDist = dist;
+                        bestX = cx;
+                        bestY = cy;
+                        bestZ = cz;
+                        bestSurf = s;
+                    }
+                }
+                for (node = gDynamicSurfacePartition[ci][cj][SPATIAL_PARTITION_FLOORS].next;
+                     node != NULL; node = node->next) {
+                    struct Surface *s = node->surface;
+                    f32 cx = (s->vertex1[0] + s->vertex2[0] + s->vertex3[0]) / 3.0f;
+                    f32 cy = (s->vertex1[1] + s->vertex2[1] + s->vertex3[1]) / 3.0f;
+                    f32 cz = (s->vertex1[2] + s->vertex2[2] + s->vertex3[2]) / 3.0f;
+                    f32 dx = cx - m->pos[0];
+                    f32 dz = cz - m->pos[2];
+                    f32 dist = dx * dx + dz * dz;
+                    if (dist < bestDist) {
+                        bestDist = dist;
+                        bestX = cx;
+                        bestY = cy;
+                        bestZ = cz;
+                        bestSurf = s;
+                    }
+                }
+            }
+        }
+        if (bestSurf != NULL) {
+            m->pos[0] = bestX;
+            m->pos[1] = bestY + 100.0f;
+            m->pos[2] = bestZ;
+            m->vel[0] = 0.0f;
+            m->vel[1] = 0.0f;
+            m->vel[2] = 0.0f;
+            m->forwardVel = 0.0f;
+            m->floorHeight = find_floor(m->pos[0], m->pos[1], m->pos[2], &m->floor);
+        } else {
+            level_trigger_warp(m, WARP_OP_DEATH);
+        }
     }
 }
 

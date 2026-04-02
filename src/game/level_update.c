@@ -1269,10 +1269,10 @@ s32 lvl_init_or_update(s16 initOrUpdate, UNUSED s32 unused) {
  */
 s32 lvl_quickstart(UNUSED s16 arg, UNUSED s32 levelNum) {
     gCurrSaveFileNum = 1;
-    gCurrLevelNum    = LEVEL_BHOP_BOB_V1;
+    gCurrLevelNum    = LEVEL_BHOP_ARCANE;
     save_file_set_flags(SAVE_FLAG_FILE_EXISTS);
     gFPSMode = TRUE;
-    return LEVEL_BHOP_BOB_V1;
+    return LEVEL_BHOP_ARCANE;
 }
 
 s32 lvl_init_from_save_file(UNUSED s16 arg0, s32 levelNum) {

@@ -27,6 +27,7 @@ const LevelScript level_bhop_bob_v1_entry[] = {
 	/* Fast64 end persistent block [level commands] */
 
 	AREA(1, bhop_bob_v1_area_1),
+		MARIO_POS(0x01, 0, -576, -928, -31296),
 		TERRAIN(bhop_bob_v1_area_1_collision),
 		MACRO_OBJECTS(bhop_bob_v1_area_1_macro_objs),
 		SET_BACKGROUND_MUSIC(0x00, SEQ_LEVEL_GRASS),
@@ -35,7 +36,7 @@ const LevelScript level_bhop_bob_v1_entry[] = {
 		/* Fast64 end persistent block [area commands] */
 	END_AREA(),
 	FREE_LEVEL_POOL(),
-	MARIO_POS(0x01, 0, -86400, -4694400, 139200),
+	MARIO_POS(0x01, 0, -576, -928, -31296),
 	CALL(0, lvl_init_or_update),
 	CALL_LOOP(1, lvl_init_or_update),
 	CLEAR_LEVEL(),

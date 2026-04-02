@@ -41,4 +41,13 @@ void load_area_terrain(s16 index, s16 *data, s8 *surfaceRooms, s16 *macroObjects
 void clear_dynamic_surfaces(void);
 void load_object_collision_model(void);
 
+struct Surface *alloc_surface(void);
+void add_surface(struct Surface *surface, s32 dynamic);
+void clear_static_surfaces(void);
+void load_environmental_regions(s16 **data);
+s32 surface_has_force(s16 surfaceType);
+s32 surface_fill_from_data(struct Surface *surface, s16 *vertexData, s16 i0, s16 i1, s16 i2);
+void surface_load_begin(void);
+void surface_load_end(void);
+
 #endif // SURFACE_LOAD_H

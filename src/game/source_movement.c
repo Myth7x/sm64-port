@@ -394,6 +394,11 @@ static void src_noclip_step(struct MarioState *m) {
 
     m->vel[0] = m->vel[1] = m->vel[2] = 0.0f;
 
+    // if space/jump is held, move upward at SRC_NOCLIP_SPEED regardless of camera pitch
+    if (m->controller->buttonDown & A_BUTTON) {
+        m->pos[1] += SRC_NOCLIP_SPEED;
+    }
+
     vec3f_copy(m->marioObj->header.gfx.pos, m->pos);
     vec3s_set(m->marioObj->header.gfx.angle, 0, gFpsYaw, 0);
 

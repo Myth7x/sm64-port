@@ -104,4 +104,6 @@ extern Gfx mat_bhop_bob_v1_dl_sprites_blueglow2_001[];
 extern Gfx mat_revert_bhop_bob_v1_dl_sprites_blueglow2_001[];
 extern Gfx bhop_bob_v1_dl_bhop_bob_v1_mesh_layer_1_with_revert[];
 
+extern const LevelScript level_bhop_bob_v1_entry[];
+
 #endif

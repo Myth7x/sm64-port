@@ -76,7 +76,7 @@ static struct SurfaceNode *alloc_surface_node(void) {
  * Allocate the part of the surface pool to contain a surface and
  * initialize the surface.
  */
-static struct Surface *alloc_surface(void) {
+struct Surface *alloc_surface(void) {
 #ifdef USE_SYSTEM_MALLOC
     struct AllocOnlyPool *pool = !sStaticSurfaceLoadComplete ?
                                  sStaticSurfacePool : sDynamicSurfacePool;
@@ -121,7 +121,7 @@ static void clear_spatial_partition(SpatialPartitionCell *cells) {
 /**
  * Clears the static (level) surface partitions for new use.
  */
-static void clear_static_surfaces(void) {
+void clear_static_surfaces(void) {
     clear_spatial_partition(&gStaticSurfacePartition[0][0]);
 }
 
@@ -221,21 +221,16 @@ static s16 max_3(s16 a0, s16 a1, s16 a2) {
  * time). This function determines the lower cell for a given x/z position.
  * @param coord The coordinate to test
  */
-static s16 lower_cell_index(s16 coord) {
-    s16 index;
+static s32 lower_cell_index(s32 coord) {
+    s32 index;
 
-    // Move from range [-0x2000, 0x2000) to [0, 0x4000)
     coord += LEVEL_BOUNDARY_MAX;
     if (coord < 0) {
         coord = 0;
     }
 
-    // [0, 16)
     index = coord / CELL_SIZE;
 
-    // Include extra cell if close to boundary
-    //! Some wall checks are larger than the buffer, meaning wall checks can
-    //  miss walls that are near a cell border.
     if (coord % CELL_SIZE < 50) {
         index -= 1;
     }
@@ -244,7 +239,6 @@ static s16 lower_cell_index(s16 coord) {
         index = 0;
     }
 
-    // Potentially > 15, but since the upper index is <= 15, not exploitable
     return index;
 }
 
@@ -253,21 +247,16 @@ static s16 lower_cell_index(s16 coord) {
  * time). This function determines the upper cell for a given x/z position.
  * @param coord The coordinate to test
  */
-static s16 upper_cell_index(s16 coord) {
-    s16 index;
+static s32 upper_cell_index(s32 coord) {
+    s32 index;
 
-    // Move from range [-0x2000, 0x2000) to [0, 0x4000)
     coord += LEVEL_BOUNDARY_MAX;
     if (coord < 0) {
         coord = 0;
     }
 
-    // [0, 16)
     index = coord / CELL_SIZE;
 
-    // Include extra cell if close to boundary
-    //! Some wall checks are larger than the buffer, meaning wall checks can
-    //  miss walls that are near a cell border.
     if (coord % CELL_SIZE > CELL_SIZE - 50) {
         index += 1;
     }
@@ -276,7 +265,6 @@ static s16 upper_cell_index(s16 coord) {
         index = NUM_CELLS_INDEX;
     }
 
-    // Potentially < 0, but since lower index is >= 0, not exploitable
     return index;
 }
 
@@ -287,15 +275,13 @@ static s16 upper_cell_index(s16 coord) {
  * @param surface The surface to check
  * @param dynamic Boolean determining whether the surface is static or dynamic
  */
-static void add_surface(struct Surface *surface, s32 dynamic) {
-    // minY/maxY maybe? s32 instead of s16, though.
+void add_surface(struct Surface *surface, s32 dynamic) {
     UNUSED s32 unused1, unused2;
     s16 minX, minZ, maxX, maxZ;
 
-    s16 minCellX, minCellZ, maxCellX, maxCellZ;
+    s32 minCellX, minCellZ, maxCellX, maxCellZ;
 
-    s16 cellZ, cellX;
-    // cellY maybe? s32 instead of s16, though.
+    s32 cellZ, cellX;
     UNUSED s32 unused3 = 0;
 
     minX = min_3(surface->vertex1[0], surface->vertex2[0], surface->vertex3[0]);
@@ -316,6 +302,34 @@ static void add_surface(struct Surface *surface, s32 dynamic) {
 }
 
 UNUSED static void stub_surface_load_1(void) {
+}
+
+s32 surface_fill_from_data(struct Surface *surface, s16 *vertexData, s16 i0, s16 i1, s16 i2) {
+    s32 off1 = 3 * i0, off2 = 3 * i1, off3 = 3 * i2;
+    register s32 x1 = vertexData[off1], y1 = vertexData[off1 + 1], z1 = vertexData[off1 + 2];
+    register s32 x2 = vertexData[off2], y2 = vertexData[off2 + 1], z2 = vertexData[off2 + 2];
+    register s32 x3 = vertexData[off3], y3 = vertexData[off3 + 1], z3 = vertexData[off3 + 2];
+    f32 nx = (y2 - y1) * (z3 - z2) - (z2 - z1) * (y3 - y2);
+    f32 ny = (z2 - z1) * (x3 - x2) - (x2 - x1) * (z3 - z2);
+    f32 nz = (x2 - x1) * (y3 - y2) - (y2 - y1) * (x3 - x2);
+    f32 mag = sqrtf(nx * nx + ny * ny + nz * nz);
+    s32 minY, maxY;
+    if (mag < 0.0001f) return 0;
+    mag = 1.0f / mag;
+    nx *= mag; ny *= mag; nz *= mag;
+    minY = maxY = y1;
+    if (y2 < minY) minY = y2;
+    if (y3 < minY) minY = y3;
+    if (y2 > maxY) maxY = y2;
+    if (y3 > maxY) maxY = y3;
+    surface->vertex1[0] = x1; surface->vertex1[1] = y1; surface->vertex1[2] = z1;
+    surface->vertex2[0] = x2; surface->vertex2[1] = y2; surface->vertex2[2] = z2;
+    surface->vertex3[0] = x3; surface->vertex3[1] = y3; surface->vertex3[2] = z3;
+    surface->normal.x = nx; surface->normal.y = ny; surface->normal.z = nz;
+    surface->originOffset = -(nx * x1 + ny * y1 + nz * z1);
+    surface->lowerY = minY - 5;
+    surface->upperY = maxY + 5;
+    return 1;
 }
 
 /**
@@ -411,7 +425,7 @@ static struct Surface *read_surface_data(s16 *vertexData, s16 **vertexIndices) {
  * Returns whether a surface has exertion/moves Mario
  * based on the surface type.
  */
-static s32 surface_has_force(s16 surfaceType) {
+s32 surface_has_force(s16 surfaceType) {
     s32 hasForce = FALSE;
 
     switch (surfaceType) {
@@ -517,7 +531,7 @@ static s16 *read_vertex_data(s16 **data) {
 /**
  * Loads in special environmental regions, such as water, poison gas, and JRB fog.
  */
-static void load_environmental_regions(s16 **data) {
+void load_environmental_regions(s16 **data) {
     s32 numRegions;
     s32 i;
 
@@ -615,16 +629,8 @@ u32 get_area_terrain_size(s16 *data) {
 
 
 #include <stdio.h>
-/**
- * Process the level file, loading in vertices, surfaces, some objects, and environmental
- * boxes (water, gas, JRB fog).
- */
-void load_area_terrain(s16 index, s16 *data, s8 *surfaceRooms, s16 *macroObjects) {
-    s16 terrainLoadType;
-    s16 *vertexData;
-    UNUSED s32 unused;
 
-    // Initialize the data for this.
+void surface_load_begin(void) {
     gEnvironmentRegions = NULL;
     unused8038BE90 = 0;
     gSurfaceNodesAllocated = 0;
@@ -635,13 +641,36 @@ void load_area_terrain(s16 index, s16 *data, s8 *surfaceRooms, s16 *macroObjects
     alloc_only_pool_clear(sDynamicSurfaceNodePool);
     alloc_only_pool_clear(sDynamicSurfacePool);
     sStaticSurfaceLoadComplete = FALSE;
-
-    // Originally they forgot to clear this matrix,
-    // results in segfaults if this is not done.
     clear_dynamic_surfaces();
 #endif
-
     clear_static_surfaces();
+}
+
+void surface_load_end(void) {
+    gNumStaticSurfaceNodes = gSurfaceNodesAllocated;
+    gNumStaticSurfaces = gSurfacesAllocated;
+#ifdef USE_SYSTEM_MALLOC
+    sStaticSurfaceLoadComplete = TRUE;
+#endif
+}
+
+/**
+ * Process the level file, loading in vertices, surfaces, some objects, and environmental
+ * boxes (water, gas, JRB fog).
+ */
+void load_area_terrain(s16 index, s16 *data, s8 *surfaceRooms, s16 *macroObjects) {
+    s16 terrainLoadType;
+    s16 *vertexData;
+    UNUSED s32 unused;
+#ifdef _WIN32
+    {
+        extern void load_area_terrain_parallel(s16, s16 *, s8 *, s16 *);
+        load_area_terrain_parallel(index, data, surfaceRooms, macroObjects);
+        return;
+    }
+#endif
+
+    surface_load_begin();
 
     // A while loop iterating through each section of the level data. Sections of data
     // are prefixed by a terrain "type." This type is reused for surfaces as the surface
@@ -684,12 +713,7 @@ void load_area_terrain(s16 index, s16 *data, s8 *surfaceRooms, s16 *macroObjects
         }
     }
 
-    gNumStaticSurfaceNodes = gSurfaceNodesAllocated;
-    gNumStaticSurfaces = gSurfacesAllocated;
-
-#ifdef USE_SYSTEM_MALLOC
-    sStaticSurfaceLoadComplete = TRUE;
-#endif
+    surface_load_end();
 }
 
 /**

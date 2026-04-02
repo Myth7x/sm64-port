@@ -308,6 +308,7 @@ static LRESULT CALLBACK gfx_dxgi_wnd_proc(HWND h_wnd, UINT message, WPARAM w_par
             break;
         case WM_KEYDOWN:
             if (!(l_param & (1 << 30))) {
+                if (w_param == 'B') { fps_teleport_to_map_center(); break; }
                 if (w_param == 'F') { fps_toggle_mode(); break; }
                 if (w_param == 'V') { fps_toggle_noclip(); break; }
                 if (w_param == VK_ESCAPE) { release_mouse(); break; }

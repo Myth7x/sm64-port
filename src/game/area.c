@@ -1,4 +1,6 @@
 #include <PR/ultratypes.h>
+#include <stdio.h>
+#include <time.h>
 
 #include "prevent_bss_reordering.h"
 #include "area.h"
@@ -256,7 +258,6 @@ void unload_area(void) {
     }
 }
 
-#include <stdio.h>
 void load_mario_area(void) {
     stop_sounds_in_continuous_banks();
     fprintf(stderr, "[load_mario_area] sound banks stopped\n");

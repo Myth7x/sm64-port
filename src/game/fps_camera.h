@@ -49,4 +49,6 @@ void fps_toggle_noclip(void);
  */
 void fps_draw_hud(void);
 
+void fps_teleport_to_map_center(void);
+
 #endif

@@ -264,6 +264,10 @@ static void gfx_sdl_handle_events(void) {
                     set_fullscreen(!fullscreen_state, true);
                     break;
                 }
+                /* B  – teleport to map center */
+                if (event.key.keysym.scancode == SDL_SCANCODE_B) {
+                    fps_teleport_to_map_center();
+                }
                 /* F  – toggle FPS mode on/off */
                 if (event.key.keysym.scancode == SDL_SCANCODE_F) {
                     fps_toggle_mode();

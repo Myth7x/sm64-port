@@ -11,6 +11,8 @@
 #include "print.h"
 #include "area.h"
 #include "level_table.h"
+#include "game/object_list_processor.h"
+#include "../engine/surface_load.h"
 
 #include "../pc/mouse.h"
 
@@ -46,6 +48,10 @@ void fps_toggle_mode(void) {
 
 void fps_toggle_noclip(void) {
     gNoclipMode = !gNoclipMode;
+}
+
+void fps_teleport_to_map_center(void) {
+    
 }
 
 /* -----------------------------------------------------------------------
