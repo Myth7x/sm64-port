@@ -1700,3 +1700,16 @@ void gfx_end_frame(void) {
         gfx_wapi->swap_buffers_end();
     }
 }
+
+void gfx_imgui_frame(void) {
+    gfx_wapi->handle_events();
+    gfx_wapi->get_dimensions(&gfx_current_dimensions.width, &gfx_current_dimensions.height);
+    if (gfx_current_dimensions.height == 0) gfx_current_dimensions.height = 1;
+    gfx_current_dimensions.aspect_ratio = (float)gfx_current_dimensions.width / (float)gfx_current_dimensions.height;
+    if (!gfx_wapi->start_frame()) return;
+    gfx_rapi->start_frame();
+    gfx_rapi->end_frame();
+    gfx_wapi->swap_buffers_begin();
+    gfx_rapi->finish_render();
+    gfx_wapi->swap_buffers_end();
+}

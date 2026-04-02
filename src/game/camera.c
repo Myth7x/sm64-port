@@ -884,20 +884,20 @@ void pan_ahead_of_player(struct Camera *c) {
 }
 
 s16 find_in_bounds_yaw_wdw_bob_thi(Vec3f pos, Vec3f origin, s16 yaw) {
-    switch (gCurrLevelArea) {
-        case AREA_WDW_MAIN:
-            yaw = clamp_positions_and_find_yaw(pos, origin, 4508.f, -3739.f, 4508.f, -3739.f);
-            break;
-        case AREA_BOB:
-            yaw = clamp_positions_and_find_yaw(pos, origin, 8000.f, -8000.f, 7050.f, -8000.f);
-            break;
-        case AREA_THI_HUGE:
-            yaw = clamp_positions_and_find_yaw(pos, origin, 8192.f, -8192.f, 8192.f, -8192.f);
-            break;
-        case AREA_THI_TINY:
-            yaw = clamp_positions_and_find_yaw(pos, origin, 2458.f, -2458.f, 2458.f, -2458.f);
-            break;
-    }
+    //switch (gCurrLevelArea) {
+    //    case AREA_WDW_MAIN:
+    //        yaw = clamp_positions_and_find_yaw(pos, origin, 4508.f, -3739.f, 4508.f, -3739.f);
+    //        break;
+    //    case AREA_BOB:
+    //        yaw = clamp_positions_and_find_yaw(pos, origin, 8000.f, -8000.f, 7050.f, -8000.f);
+    //        break;
+    //    case AREA_THI_HUGE:
+    //        yaw = clamp_positions_and_find_yaw(pos, origin, 8192.f, -8192.f, 8192.f, -8192.f);
+    //        break;
+    //    case AREA_THI_TINY:
+    //        yaw = clamp_positions_and_find_yaw(pos, origin, 2458.f, -2458.f, 2458.f, -2458.f);
+    //        break;
+    //}
     return yaw;
 }
 
@@ -945,9 +945,9 @@ s32 update_8_directions_camera(struct Camera *c, Vec3f focus, Vec3f pos) {
     calc_y_to_curr_floor(&posY, 1.f, 200.f, &focusY, 0.9f, 200.f);
     focus_on_mario(focus, pos, posY + yOff, focusY + yOff, sLakituDist + baseDist, pitch, camYaw);
     pan_ahead_of_player(c);
-    if (gCurrLevelArea == AREA_DDD_SUB) {
-        camYaw = clamp_positions_and_find_yaw(pos, focus, 6839.f, 995.f, 5994.f, -3945.f);
-    }
+    //if (gCurrLevelArea == AREA_DDD_SUB) {
+    //    camYaw = clamp_positions_and_find_yaw(pos, focus, 6839.f, 995.f, 5994.f, -3945.f);
+    //}
 
     return camYaw;
 }
@@ -1463,22 +1463,22 @@ s32 update_fixed_camera(struct Camera *c, Vec3f focus, UNUSED Vec3f pos) {
     play_camera_buzz_if_c_sideways();
 
     // Don't move closer to Mario in these areas
-    switch (gCurrLevelArea) {
-        case AREA_RR:
-            scaleToMario = 0.f;
-            heightOffset = 0.f;
-            break;
-
-        case AREA_CASTLE_LOBBY:
-            scaleToMario = 0.3f;
-            heightOffset = 0.f;
-            break;
-
-        case AREA_BBH:
-            scaleToMario = 0.f;
-            heightOffset = 0.f;
-            break;
-    }
+    //switch (gCurrLevelArea) {
+    //    case AREA_RR:
+    //        scaleToMario = 0.f;
+    //        heightOffset = 0.f;
+    //        break;
+//
+    //    case AREA_CASTLE_LOBBY:
+    //        scaleToMario = 0.3f;
+    //        heightOffset = 0.f;
+    //        break;
+//
+    //    case AREA_BBH:
+    //        scaleToMario = 0.f;
+    //        heightOffset = 0.f;
+    //        break;
+    //}
 
     handle_c_button_movement(c);
     play_camera_buzz_if_cdown();
@@ -1610,18 +1610,18 @@ s32 update_boss_fight_camera(struct Camera *c, Vec3f focus, Vec3f pos) {
         nz = floor->normal.z;
         oo = floor->originOffset;
         pos[1] = 300.f - (nx * pos[0] + nz * pos[2] + oo) / ny;
-        switch (gCurrLevelArea) {
-            case AREA_BOB:
-                pos[1] += 125.f;
-                //! fall through, makes the BoB boss fight camera move up twice as high as it should
-            case AREA_WF:
-                pos[1] += 125.f;
-        }
+        //switch (gCurrLevelArea) {
+        //    case AREA_BOB:
+        //        pos[1] += 125.f;
+        //        //! fall through, makes the BoB boss fight camera move up twice as high as it should
+        //    case AREA_WF:
+        //        pos[1] += 125.f;
+        //}
     }
 
     //! Must be same line to match on -O2
     // Prevent the camera from going to the ground in the outside boss fight
-    if (gCurrLevelNum == LEVEL_BBH) { pos[1] = 2047.f; }
+    //if (gCurrLevelNum == LEVEL_BBH) { pos[1] = 2047.f; }
 
     // Rotate from C-Button input
     if (sCSideButtonYaw < 0) {
@@ -1890,15 +1890,15 @@ s32 update_behind_mario_camera(struct Camera *c, Vec3f focus, Vec3f pos) {
         dist = 300.f;
     }
     vec3f_set_dist_and_angle(focus, pos, dist, pitch, yaw);
-    if (gCurrLevelArea == AREA_WDW_MAIN) {
-        yaw = clamp_positions_and_find_yaw(pos, focus, 4508.f, -3739.f, 4508.f, -3739.f);
-    }
-    if (gCurrLevelArea == AREA_THI_HUGE) {
-        yaw = clamp_positions_and_find_yaw(pos, focus, 8192.f, -8192.f, 8192.f, -8192.f);
-    }
-    if (gCurrLevelArea == AREA_THI_TINY) {
-        yaw = clamp_positions_and_find_yaw(pos, focus, 2458.f, -2458.f, 2458.f, -2458.f);
-    }
+    //if (gCurrLevelArea == AREA_WDW_MAIN) {
+    //    yaw = clamp_positions_and_find_yaw(pos, focus, 4508.f, -3739.f, 4508.f, -3739.f);
+    //}
+    //if (gCurrLevelArea == AREA_THI_HUGE) {
+    //    yaw = clamp_positions_and_find_yaw(pos, focus, 8192.f, -8192.f, 8192.f, -8192.f);
+    //}
+    //if (gCurrLevelArea == AREA_THI_TINY) {
+    //    yaw = clamp_positions_and_find_yaw(pos, focus, 2458.f, -2458.f, 2458.f, -2458.f);
+    //}
 
     return yaw;
 }
@@ -2317,18 +2317,18 @@ s16 update_default_camera(struct Camera *c) {
     if (c->mode == CAMERA_MODE_FREE_ROAM) {
         if (gCameraMovementFlags & CAM_MOVE_ZOOMED_OUT) {
             posHeight = 375.f;
-            if (gCurrLevelArea == AREA_SSL_PYRAMID) {
-                posHeight /= 2;
-            }
+            //if (gCurrLevelArea == AREA_SSL_PYRAMID) {
+            //    posHeight /= 2;
+            //}
         } else {
             posHeight = 100.f;
         }
     }
     if ((gCameraMovementFlags & CAM_MOVE_ZOOMED_OUT) && (sSelectionFlags & CAM_MODE_MARIO_ACTIVE)) {
         posHeight = 610.f;
-        if (gCurrLevelArea == AREA_SSL_PYRAMID || gCurrLevelNum == LEVEL_CASTLE) {
-            posHeight /= 2;
-        }
+        //if (gCurrLevelArea == AREA_SSL_PYRAMID || gCurrLevelNum == LEVEL_CASTLE) {
+        //    posHeight /= 2;
+        //}
     }
 
     // Make Lakitu fly above the gas
@@ -2384,9 +2384,9 @@ s16 update_default_camera(struct Camera *c) {
             c->pos[1] = ceilHeight;
         }
     }
-    if (gCurrLevelArea == AREA_WDW_TOWN) {
-        yaw = clamp_positions_and_find_yaw(c->pos, c->focus, 2254.f, -3789.f, 3790.f, -2253.f);
-    }
+    //if (gCurrLevelArea == AREA_WDW_TOWN) {
+    //    yaw = clamp_positions_and_find_yaw(c->pos, c->focus, 2254.f, -3789.f, 3790.f, -2253.f);
+    //}
     return yaw;
 }
 
@@ -2867,8 +2867,7 @@ void set_camera_mode(struct Camera *c, s16 mode, s16 frames) {
     struct LinearTransitionPoint *start = &sModeInfo.transitionStart;
     struct LinearTransitionPoint *end = &sModeInfo.transitionEnd;
 
-    if (mode == CAMERA_MODE_WATER_SURFACE && gCurrLevelArea == AREA_TTM_OUTSIDE) {
-    } else {
+    {
         // Clear movement flags that would affect the transition
         gCameraMovementFlags &= (u16)~(CAM_MOVE_RESTRICT | CAM_MOVE_ROTATE);
         gCameraMovementFlags |= CAM_MOVING_INTO_MODE;
@@ -3407,31 +3406,31 @@ void init_camera(struct Camera *c) {
     if (c->mode == CAMERA_MODE_8_DIRECTIONS) {
         gCameraMovementFlags |= CAM_MOVE_ZOOMED_OUT;
     }
-    switch (gCurrLevelArea) {
-        case AREA_SSL_EYEROK:
-            vec3f_set(marioOffset, 0.f, 500.f, -100.f);
-            break;
-        case AREA_CCM_SLIDE:
-            marioOffset[2] = -300.f;
-            break;
-        case AREA_THI_WIGGLER:
-            marioOffset[2] = -300.f;
-            break;
-        case AREA_SL_IGLOO:
-            marioOffset[2] = -300.f;
-            break;
-        case AREA_SL_OUTSIDE:
-            if (is_within_100_units_of_mario(257.f, 2150.f, 1399.f) == 1) {
-                marioOffset[2] = -300.f;
-            }
-            break;
-        case AREA_CCM_OUTSIDE:
-            gCameraMovementFlags |= CAM_MOVE_ZOOMED_OUT;
-            break;
-        case AREA_TTM_OUTSIDE:
-            gLakituState.mode = CAMERA_MODE_RADIAL;
-            break;
-    }
+    //switch (gCurrLevelArea) {
+    //    case AREA_SSL_EYEROK:
+    //        vec3f_set(marioOffset, 0.f, 500.f, -100.f);
+    //        break;
+    //    case AREA_CCM_SLIDE:
+    //        marioOffset[2] = -300.f;
+    //        break;
+    //    case AREA_THI_WIGGLER:
+    //        marioOffset[2] = -300.f;
+    //        break;
+    //    case AREA_SL_IGLOO:
+    //        marioOffset[2] = -300.f;
+    //        break;
+    //    case AREA_SL_OUTSIDE:
+    //        if (is_within_100_units_of_mario(257.f, 2150.f, 1399.f) == 1) {
+    //            marioOffset[2] = -300.f;
+    //        }
+    //        break;
+    //    case AREA_CCM_OUTSIDE:
+    //        gCameraMovementFlags |= CAM_MOVE_ZOOMED_OUT;
+    //        break;
+    //    case AREA_TTM_OUTSIDE:
+    //        gLakituState.mode = CAMERA_MODE_RADIAL;
+    //        break;
+    //}
 
     // Set the camera pos to marioOffset (relative to Mario), added to Mario's position
     offset_rotated(c->pos, sMarioCamState->pos, marioOffset, sMarioCamState->faceAngle);
@@ -4764,30 +4763,30 @@ s32 offset_yaw_outward_radial(struct Camera *c, s16 areaYaw) {
     f32 distFromAreaCenter;
     Vec3f areaCenter;
     s16 dYaw;
-    switch (gCurrLevelArea) {
-        case AREA_TTC:
-            areaCenter[0] = c->areaCenX;
-            areaCenter[1] = sMarioCamState->pos[1];
-            areaCenter[2] = c->areaCenZ;
-            distFromAreaCenter = calc_abs_dist(areaCenter, sMarioCamState->pos);
-            if (800.f > distFromAreaCenter) {
-                yawGoal = 0x3800;
-            }
-            break;
-        case AREA_SSL_PYRAMID:
-            // This mask splits the 360 degrees of yaw into 4 corners. It adds 45 degrees so that the yaw
-            // offset at the corner will be 0, but the yaw offset near the center will face more towards
-            // the direction Mario is running in.
-            yawGoal = (areaYaw & 0xC000) - areaYaw + DEGREES(45);
-            if (yawGoal < 0) {
-                yawGoal = -yawGoal;
-            }
-            yawGoal = yawGoal / 32 * 48;
-            break;
-        case AREA_LLL_OUTSIDE:
-            yawGoal = 0;
-            break;
-    }
+    //switch (gCurrLevelArea) {
+    //    case AREA_TTC:
+    //        areaCenter[0] = c->areaCenX;
+    //        areaCenter[1] = sMarioCamState->pos[1];
+    //        areaCenter[2] = c->areaCenZ;
+    //        distFromAreaCenter = calc_abs_dist(areaCenter, sMarioCamState->pos);
+    //        if (800.f > distFromAreaCenter) {
+    //            yawGoal = 0x3800;
+    //        }
+    //        break;
+    //    case AREA_SSL_PYRAMID:
+    //        // This mask splits the 360 degrees of yaw into 4 corners. It adds 45 degrees so that the yaw
+    //        // offset at the corner will be 0, but the yaw offset near the center will face more towards
+    //        // the direction Mario is running in.
+    //        yawGoal = (areaYaw & 0xC000) - areaYaw + DEGREES(45);
+    //        if (yawGoal < 0) {
+    //            yawGoal = -yawGoal;
+    //        }
+    //        yawGoal = yawGoal / 32 * 48;
+    //        break;
+    //    case AREA_LLL_OUTSIDE:
+    //        yawGoal = 0;
+    //        break;
+    //}
     dYaw = gMarioStates[0].forwardVel / 32.f * 128.f;
 
     if (sAreaYawChange < 0) {
@@ -5150,25 +5149,25 @@ u8 get_cutscene_from_mario_status(struct Camera *c) {
         sObjectCutscene = 0;
         if (sMarioCamState->cameraEvent == CAM_EVENT_DOOR) {
             switch (gCurrLevelArea) {
-                case AREA_CASTLE_LOBBY:
-                    //! doorStatus is never DOOR_ENTER_LOBBY when cameraEvent == 6, because
-                    //! doorStatus is only used for the star door in the lobby, which uses
-                    //! ACT_ENTERING_STAR_DOOR
-                    if (c->mode == CAMERA_MODE_SPIRAL_STAIRS || c->mode == CAMERA_MODE_CLOSE
-                                                                 || c->doorStatus == DOOR_ENTER_LOBBY) {
-                        cutscene = open_door_cutscene(CUTSCENE_DOOR_PULL_MODE, CUTSCENE_DOOR_PUSH_MODE);
-                    } else {
-                        cutscene = open_door_cutscene(CUTSCENE_DOOR_PULL, CUTSCENE_DOOR_PUSH);
-                    }
-                    break;
-                case AREA_BBH:
-                    //! Castle Lobby uses 0 to mean 'no special modes', but BBH uses 1...
-                    if (c->doorStatus == DOOR_LEAVING_SPECIAL) {
-                        cutscene = open_door_cutscene(CUTSCENE_DOOR_PULL, CUTSCENE_DOOR_PUSH);
-                    } else {
-                        cutscene = open_door_cutscene(CUTSCENE_DOOR_PULL_MODE, CUTSCENE_DOOR_PUSH_MODE);
-                    }
-                    break;
+                //case AREA_CASTLE_LOBBY:
+                //    //! doorStatus is never DOOR_ENTER_LOBBY when cameraEvent == 6, because
+                //    //! doorStatus is only used for the star door in the lobby, which uses
+                //    //! ACT_ENTERING_STAR_DOOR
+                //    if (c->mode == CAMERA_MODE_SPIRAL_STAIRS || c->mode == CAMERA_MODE_CLOSE
+                //                                                 || c->doorStatus == DOOR_ENTER_LOBBY) {
+                //        cutscene = open_door_cutscene(CUTSCENE_DOOR_PULL_MODE, CUTSCENE_DOOR_PUSH_MODE);
+                //    } else {
+                //        cutscene = open_door_cutscene(CUTSCENE_DOOR_PULL, CUTSCENE_DOOR_PUSH);
+                //    }
+                //    break;
+                //case AREA_BBH:
+                //    //! Castle Lobby uses 0 to mean 'no special modes', but BBH uses 1...
+                //    if (c->doorStatus == DOOR_LEAVING_SPECIAL) {
+                //        cutscene = open_door_cutscene(CUTSCENE_DOOR_PULL, CUTSCENE_DOOR_PUSH);
+                //    } else {
+                //        cutscene = open_door_cutscene(CUTSCENE_DOOR_PULL_MODE, CUTSCENE_DOOR_PUSH_MODE);
+                //    }
+                //    break;
                 default:
                     cutscene = open_door_cutscene(CUTSCENE_DOOR_PULL, CUTSCENE_DOOR_PUSH);
                     break;
@@ -5612,15 +5611,15 @@ void parallel_tracking_init(struct Camera *c, struct ParallelTrackingPoint *path
  * Set the fixed camera base pos depending on the current level area
  */
 void set_fixed_cam_axis_sa_lobby(UNUSED s16 preset) {
-    switch (gCurrLevelArea) {
-        case AREA_SA:
-            vec3f_set(sFixedModeBasePosition, 646.f, 143.f, -1513.f);
-            break;
-
-        case AREA_CASTLE_LOBBY:
-            vec3f_set(sFixedModeBasePosition, -577.f, 143.f, 1443.f);
-            break;
-    }
+    //switch (gCurrLevelArea) {
+    //    case AREA_SA:
+    //        vec3f_set(sFixedModeBasePosition, 646.f, 143.f, -1513.f);
+    //        break;
+//
+    //    case AREA_CASTLE_LOBBY:
+    //        vec3f_set(sFixedModeBasePosition, -577.f, 143.f, 1443.f);
+    //        break;
+    //}
 }
 
 /**
@@ -6586,113 +6585,113 @@ s16 camera_course_processing(struct Camera *c) {
     }
 
     // Area-specific camera processing
-    if (!(sStatusFlags & CAM_FLAG_BLOCK_AREA_PROCESSING)) {
-        switch (gCurrLevelArea) {
-            case AREA_WF:
-                if (sMarioCamState->action == ACT_RIDING_HOOT) {
-                    transition_to_camera_mode(c, CAMERA_MODE_SLIDE_HOOT, 60);
-                } else {
-                    switch (sMarioGeometry.currFloorType) {
-                        case SURFACE_CAMERA_8_DIR:
-                            transition_to_camera_mode(c, CAMERA_MODE_8_DIRECTIONS, 90);
-                            s8DirModeBaseYaw = DEGREES(90);
-                            break;
-
-                        case SURFACE_BOSS_FIGHT_CAMERA:
-                            if (gCurrActNum == 1) {
-                                set_camera_mode_boss_fight(c);
-                            } else {
-                                set_camera_mode_radial(c, 60);
-                            }
-                            break;
-                        default:
-                            set_camera_mode_radial(c, 60);
-                    }
-                }
-                break;
-
-            case AREA_BBH:
-                // if camera is fixed at bbh_room_13_balcony_camera (but as floats)
-                if (vec3f_compare(sFixedModeBasePosition, 210.f, 420.f, 3109.f) == 1)
-                {
-                    if (sMarioCamState->pos[1] < 1800.f) {
-                        transition_to_camera_mode(c, CAMERA_MODE_CLOSE, 30);
-                    }
-                }
-                break;
-
-            case AREA_SSL_PYRAMID:
-                set_mode_if_not_set_by_surface(c, CAMERA_MODE_OUTWARD_RADIAL);
-                break;
-
-            case AREA_SSL_OUTSIDE:
-                set_mode_if_not_set_by_surface(c, CAMERA_MODE_RADIAL);
-                break;
-
-            case AREA_THI_HUGE:
-                break;
-
-            case AREA_THI_TINY:
-                surface_type_modes_thi(c);
-                break;
-
-            case AREA_TTC:
-                set_mode_if_not_set_by_surface(c, CAMERA_MODE_OUTWARD_RADIAL);
-                break;
-
-            case AREA_BOB:
-                if (set_mode_if_not_set_by_surface(c, CAMERA_MODE_NONE) == 0) {
-                    if (sMarioGeometry.currFloorType == SURFACE_BOSS_FIGHT_CAMERA) {
-                        set_camera_mode_boss_fight(c);
-                    } else {
-                        if (c->mode == CAMERA_MODE_CLOSE) {
-                            transition_to_camera_mode(c, CAMERA_MODE_RADIAL, 60);
-                        } else {
-                            set_camera_mode_radial(c, 60);
-                        }
-                    }
-                }
-                break;
-
-            case AREA_WDW_MAIN:
-                switch (sMarioGeometry.currFloorType) {
-                    case SURFACE_INSTANT_WARP_1B:
-                        c->defMode = CAMERA_MODE_RADIAL;
-                        break;
-                }
-                break;
-
-            case AREA_WDW_TOWN:
-                switch (sMarioGeometry.currFloorType) {
-                    case SURFACE_INSTANT_WARP_1C:
-                        c->defMode = CAMERA_MODE_CLOSE;
-                        break;
-                }
-                break;
-
-            case AREA_DDD_WHIRLPOOL:
-                //! @bug this does nothing
-                gLakituState.defMode = CAMERA_MODE_OUTWARD_RADIAL;
-                break;
-
-            case AREA_DDD_SUB:
-                if ((c->mode != CAMERA_MODE_BEHIND_MARIO)
-                    && (c->mode != CAMERA_MODE_WATER_SURFACE)) {
-                    if (((sMarioCamState->action & ACT_FLAG_ON_POLE) != 0)
-                        || (sMarioGeometry.currFloorHeight > 800.f)) {
-                        transition_to_camera_mode(c, CAMERA_MODE_8_DIRECTIONS, 60);
-
-                    } else {
-                        if (sMarioCamState->pos[1] < 800.f) {
-                            transition_to_camera_mode(c, CAMERA_MODE_FREE_ROAM, 60);
-                        }
-                    }
-                }
-                //! @bug this does nothing
-                gLakituState.defMode = CAMERA_MODE_FREE_ROAM;
-                break;
-        }
-    }
+    //if (!(sStatusFlags & CAM_FLAG_BLOCK_AREA_PROCESSING)) {
+    //    switch (gCurrLevelArea) {
+    //        case AREA_WF:
+    //            if (sMarioCamState->action == ACT_RIDING_HOOT) {
+    //                transition_to_camera_mode(c, CAMERA_MODE_SLIDE_HOOT, 60);
+    //            } else {
+    //                switch (sMarioGeometry.currFloorType) {
+    //                    case SURFACE_CAMERA_8_DIR:
+    //                        transition_to_camera_mode(c, CAMERA_MODE_8_DIRECTIONS, 90);
+    //                        s8DirModeBaseYaw = DEGREES(90);
+    //                        break;
+//
+    //                    case SURFACE_BOSS_FIGHT_CAMERA:
+    //                        if (gCurrActNum == 1) {
+    //                            set_camera_mode_boss_fight(c);
+    //                        } else {
+    //                            set_camera_mode_radial(c, 60);
+    //                        }
+    //                        break;
+    //                    default:
+    //                        set_camera_mode_radial(c, 60);
+    //                }
+    //            }
+    //            break;
+//
+    //        case AREA_BBH:
+    //            // if camera is fixed at bbh_room_13_balcony_camera (but as floats)
+    //            if (vec3f_compare(sFixedModeBasePosition, 210.f, 420.f, 3109.f) == 1)
+    //            {
+    //                if (sMarioCamState->pos[1] < 1800.f) {
+    //                    transition_to_camera_mode(c, CAMERA_MODE_CLOSE, 30);
+    //                }
+    //            }
+    //            break;
+//
+    //        case AREA_SSL_PYRAMID:
+    //            set_mode_if_not_set_by_surface(c, CAMERA_MODE_OUTWARD_RADIAL);
+    //            break;
+//
+    //        case AREA_SSL_OUTSIDE:
+    //            set_mode_if_not_set_by_surface(c, CAMERA_MODE_RADIAL);
+    //            break;
+//
+    //        case AREA_THI_HUGE:
+    //            break;
+//
+    //        case AREA_THI_TINY:
+    //            surface_type_modes_thi(c);
+    //            break;
+//
+    //        case AREA_TTC:
+    //            set_mode_if_not_set_by_surface(c, CAMERA_MODE_OUTWARD_RADIAL);
+    //            break;
+//
+    //        case AREA_BOB:
+    //            if (set_mode_if_not_set_by_surface(c, CAMERA_MODE_NONE) == 0) {
+    //                if (sMarioGeometry.currFloorType == SURFACE_BOSS_FIGHT_CAMERA) {
+    //                    set_camera_mode_boss_fight(c);
+    //                } else {
+    //                    if (c->mode == CAMERA_MODE_CLOSE) {
+    //                        transition_to_camera_mode(c, CAMERA_MODE_RADIAL, 60);
+    //                    } else {
+    //                        set_camera_mode_radial(c, 60);
+    //                    }
+    //                }
+    //            }
+    //            break;
+//
+    //        case AREA_WDW_MAIN:
+    //            switch (sMarioGeometry.currFloorType) {
+    //                case SURFACE_INSTANT_WARP_1B:
+    //                    c->defMode = CAMERA_MODE_RADIAL;
+    //                    break;
+    //            }
+    //            break;
+//
+    //        case AREA_WDW_TOWN:
+    //            switch (sMarioGeometry.currFloorType) {
+    //                case SURFACE_INSTANT_WARP_1C:
+    //                    c->defMode = CAMERA_MODE_CLOSE;
+    //                    break;
+    //            }
+    //            break;
+//
+    //        case AREA_DDD_WHIRLPOOL:
+    //            //! @bug this does nothing
+    //            gLakituState.defMode = CAMERA_MODE_OUTWARD_RADIAL;
+    //            break;
+//
+    //        case AREA_DDD_SUB:
+    //            if ((c->mode != CAMERA_MODE_BEHIND_MARIO)
+    //                && (c->mode != CAMERA_MODE_WATER_SURFACE)) {
+    //                if (((sMarioCamState->action & ACT_FLAG_ON_POLE) != 0)
+    //                    || (sMarioGeometry.currFloorHeight > 800.f)) {
+    //                    transition_to_camera_mode(c, CAMERA_MODE_8_DIRECTIONS, 60);
+//
+    //                } else {
+    //                    if (sMarioCamState->pos[1] < 800.f) {
+    //                        transition_to_camera_mode(c, CAMERA_MODE_FREE_ROAM, 60);
+    //                    }
+    //                }
+    //            }
+    //            //! @bug this does nothing
+    //            gLakituState.defMode = CAMERA_MODE_FREE_ROAM;
+    //            break;
+    //    }
+    //}
 
     sStatusFlags &= ~CAM_FLAG_BLOCK_AREA_PROCESSING;
     if (oldMode == CAMERA_MODE_C_UP) {
@@ -9808,94 +9807,94 @@ BAD_RETURN(s32) cutscene_credits(struct Camera *c) {
     cutscene_event(cutscene_credits_reset_spline, c, 0, 0);
 
     switch (gCurrLevelArea) {
-        case AREA_BOB:
-            pos = sBobCreditsSplinePositions;
-            focus = sBobCreditsSplineFocus;
-            break;
-        case AREA_WF:
-            pos = sWfCreditsSplinePositions;
-            focus = sWfCreditsSplineFocus;
-            break;
-        case AREA_JRB_MAIN:
-            pos = sJrbCreditsSplinePositions;
-            focus = sJrbCreditsSplineFocus;
-            break;
-        case AREA_CCM_SLIDE:
-            pos = sCcmSlideCreditsSplinePositions;
-            focus = sCcmSlideCreditsSplineFocus;
-            break;
-        case AREA_BBH:
-            pos = sBbhCreditsSplinePositions;
-            focus = sBbhCreditsSplineFocus;
-            break;
-        case AREA_HMC:
-            pos = sHmcCreditsSplinePositions;
-            focus = sHmcCreditsSplineFocus;
-            break;
-        case AREA_THI_WIGGLER:
-            pos = sThiWigglerCreditsSplinePositions;
-            focus = sThiWigglerCreditsSplineFocus;
-            break;
-        case AREA_LLL_VOLCANO:
-            pos = sVolcanoCreditsSplinePositions;
-            focus = sVolcanoCreditsSplineFocus;
-            break;
-        case AREA_SSL_OUTSIDE:
-            pos = sSslCreditsSplinePositions;
-            focus = sSslCreditsSplineFocus;
-            break;
-        case AREA_DDD_WHIRLPOOL:
-            pos = sDddCreditsSplinePositions;
-            focus = sDddCreditsSplineFocus;
-            break;
-        case AREA_SL_OUTSIDE:
-            pos = sSlCreditsSplinePositions;
-            focus = sSlCreditsSplineFocus;
-            break;
-        case AREA_WDW_MAIN:
-            pos = sWdwCreditsSplinePositions;
-            focus = sWdwCreditsSplineFocus;
-            break;
-        case AREA_TTM_OUTSIDE:
-            pos = sTtmCreditsSplinePositions;
-            focus = sTtmCreditsSplineFocus;
-            break;
-        case AREA_THI_HUGE:
-            pos = sThiHugeCreditsSplinePositions;
-            focus = sThiHugeCreditsSplineFocus;
-            break;
-        case AREA_TTC:
-            pos = sTtcCreditsSplinePositions;
-            focus = sTtcCreditsSplineFocus;
-            break;
-        case AREA_RR:
-            pos = sRrCreditsSplinePositions;
-            focus = sRrCreditsSplineFocus;
-            break;
-        case AREA_SA:
-            pos = sSaCreditsSplinePositions;
-            focus = sSaCreditsSplineFocus;
-            break;
-        case AREA_COTMC:
-            pos = sCotmcCreditsSplinePositions;
-            focus = sCotmcCreditsSplineFocus;
-            break;
-        case AREA_DDD_SUB:
-            pos = sDddSubCreditsSplinePositions;
-            focus = sDddSubCreditsSplineFocus;
-            break;
-        case AREA_CCM_OUTSIDE:
-            //! Checks if the "Snowman's Lost His Head" star was collected. The credits likely would
-            //! have avoided the snowman if the player didn't collect that star, but in the end the
-            //! developers decided against it.
-            if (save_file_get_star_flags(gCurrSaveFileNum - 1, gCurrCourseNum - 1) & 0x10) {
-                pos = sCcmOutsideCreditsSplinePositions;
-                focus = sCcmOutsideCreditsSplineFocus;
-            } else {
-                pos = sCcmOutsideCreditsSplinePositions;
-                focus = sCcmOutsideCreditsSplineFocus;
-            }
-            break;
+        //case AREA_BOB:
+        //    pos = sBobCreditsSplinePositions;
+        //    focus = sBobCreditsSplineFocus;
+        //    break;
+        //case AREA_WF:
+        //    pos = sWfCreditsSplinePositions;
+        //    focus = sWfCreditsSplineFocus;
+        //    break;
+        //case AREA_JRB_MAIN:
+        //    pos = sJrbCreditsSplinePositions;
+        //    focus = sJrbCreditsSplineFocus;
+        //    break;
+        //case AREA_CCM_SLIDE:
+        //    pos = sCcmSlideCreditsSplinePositions;
+        //    focus = sCcmSlideCreditsSplineFocus;
+        //    break;
+        //case AREA_BBH:
+        //    pos = sBbhCreditsSplinePositions;
+        //    focus = sBbhCreditsSplineFocus;
+        //    break;
+        //case AREA_HMC:
+        //    pos = sHmcCreditsSplinePositions;
+        //    focus = sHmcCreditsSplineFocus;
+        //    break;
+        //case AREA_THI_WIGGLER:
+        //    pos = sThiWigglerCreditsSplinePositions;
+        //    focus = sThiWigglerCreditsSplineFocus;
+        //    break;
+        //case AREA_LLL_VOLCANO:
+        //    pos = sVolcanoCreditsSplinePositions;
+        //    focus = sVolcanoCreditsSplineFocus;
+        //    break;
+        //case AREA_SSL_OUTSIDE:
+        //    pos = sSslCreditsSplinePositions;
+        //    focus = sSslCreditsSplineFocus;
+        //    break;
+        //case AREA_DDD_WHIRLPOOL:
+        //    pos = sDddCreditsSplinePositions;
+        //    focus = sDddCreditsSplineFocus;
+        //    break;
+        //case AREA_SL_OUTSIDE:
+        //    pos = sSlCreditsSplinePositions;
+        //    focus = sSlCreditsSplineFocus;
+        //    break;
+        //case AREA_WDW_MAIN:
+        //    pos = sWdwCreditsSplinePositions;
+        //    focus = sWdwCreditsSplineFocus;
+        //    break;
+        //case AREA_TTM_OUTSIDE:
+        //    pos = sTtmCreditsSplinePositions;
+        //    focus = sTtmCreditsSplineFocus;
+        //    break;
+        //case AREA_THI_HUGE:
+        //    pos = sThiHugeCreditsSplinePositions;
+        //    focus = sThiHugeCreditsSplineFocus;
+        //    break;
+        //case AREA_TTC:
+        //    pos = sTtcCreditsSplinePositions;
+        //    focus = sTtcCreditsSplineFocus;
+        //    break;
+        //case AREA_RR:
+        //    pos = sRrCreditsSplinePositions;
+        //    focus = sRrCreditsSplineFocus;
+        //    break;
+        //case AREA_SA:
+        //    pos = sSaCreditsSplinePositions;
+        //    focus = sSaCreditsSplineFocus;
+        //    break;
+        //case AREA_COTMC:
+        //    pos = sCotmcCreditsSplinePositions;
+        //    focus = sCotmcCreditsSplineFocus;
+        //    break;
+        //case AREA_DDD_SUB:
+        //    pos = sDddSubCreditsSplinePositions;
+        //    focus = sDddSubCreditsSplineFocus;
+        //    break;
+        //case AREA_CCM_OUTSIDE:
+        //    //! Checks if the "Snowman's Lost His Head" star was collected. The credits likely would
+        //    //! have avoided the snowman if the player didn't collect that star, but in the end the
+        //    //! developers decided against it.
+        //    if (save_file_get_star_flags(gCurrSaveFileNum - 1, gCurrCourseNum - 1) & 0x10) {
+        //        pos = sCcmOutsideCreditsSplinePositions;
+        //        focus = sCcmOutsideCreditsSplineFocus;
+        //    } else {
+        //        pos = sCcmOutsideCreditsSplinePositions;
+        //        focus = sCcmOutsideCreditsSplineFocus;
+        //    }
+        //    break;
         default:
             pos = sCcmOutsideCreditsSplinePositions;
             focus = sCcmOutsideCreditsSplineFocus;
@@ -10854,7 +10853,7 @@ u8 sZoomOutAreaMasks[] = {
     ZOOMOUT_AREA_MASK(0,0,0,0, 0,0,0,0), // SURF_MENTOS      | Unused
 };
 
-STATIC_ASSERT(ARRAY_COUNT(sZoomOutAreaMasks) - 1 == LEVEL_MAX / 2, "Make sure you edit sZoomOutAreaMasks when adding / removing courses.");
+STATIC_ASSERT(ARRAY_COUNT(sZoomOutAreaMasks) - 1 >= LEVEL_MAX / 2, "Make sure you edit sZoomOutAreaMasks when adding / removing courses.");
 
 /*
  * credits spline paths.

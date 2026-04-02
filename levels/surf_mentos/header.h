@@ -226,4 +226,8 @@ extern Gfx surf_mentos_dl_surf_mentos_mesh_layer_1_with_revert[];
 
 extern const LevelScript level_surf_mentos_entry[];
 
+extern const LevelScript level_surf_mentos_entry[];
+
+extern const LevelScript level_surf_mentos_entry[];
+
 #endif

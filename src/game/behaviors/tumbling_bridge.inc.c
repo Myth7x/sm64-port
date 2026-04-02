@@ -1,9 +1,6 @@
 // tumbling_bridge.c.inc
 
-#include "levels/wf/header.h"
-#include "levels/bbh/header.h"
-#include "levels/lll/header.h"
-#include "levels/bitfs/header.h"
+#include "removed_level_stubs.h"
 
 struct Struct8032F34C sTumblingBridgeParams[] = {
     { 9, -512, 0x80, MODEL_WF_TUMBLING_BRIDGE_PART, wf_seg7_collision_tumbling_bridge },

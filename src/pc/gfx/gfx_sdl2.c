@@ -21,6 +21,10 @@
 #include "../../game/fps_mode.h"
 #include "../../game/fps_camera.h"
 
+#if defined(__linux__) || defined(__BSD__)
+#include "gfx_sdl2_imgui.h"
+#endif
+
 #define GFX_API_NAME "SDL2 - OpenGL"
 
 static SDL_Window *wnd;
@@ -175,6 +179,10 @@ static void gfx_sdl_init(const char *game_name, bool start_in_fullscreen) {
 
     SDL_GL_CreateContext(wnd);
 
+#if defined(__linux__) || defined(__BSD__)
+    imgui_sdl2_init(wnd);
+#endif
+
     SDL_GL_SetSwapInterval(1);
     test_vsync();
     if (!vsync_enabled)
@@ -256,6 +264,9 @@ static void gfx_sdl_onkeyup(int scancode) {
 static void gfx_sdl_handle_events(void) {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
+#if defined(__linux__) || defined(__BSD__)
+        imgui_sdl2_process_event(&event);
+#endif
         switch (event.type) {
 #ifndef TARGET_WEB
             // Scancodes are broken in Emscripten SDL2: https://bugzilla.libsdl.org/show_bug.cgi?id=3259
@@ -334,6 +345,10 @@ static void gfx_sdl_swap_buffers_begin(void) {
     if (!vsync_enabled) {
         sync_framerate_with_timer();
     }
+
+#if defined(__linux__) || defined(__BSD__)
+    imgui_sdl2_render_frame();
+#endif
 
     SDL_GL_SwapWindow(wnd);
 }

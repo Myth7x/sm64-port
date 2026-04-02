@@ -27,6 +27,11 @@
 
 #include "gfx_screen_config.h"
 
+#include "imgui.h"
+#include "imgui_impl_win32.h"
+#include "imgui_impl_dx11.h"
+#include "imgui_menu/imgui_menu.h"
+
 #define THREE_POINT_FILTERING 0
 #define DEBUG_D3D 0
 
@@ -303,6 +308,10 @@ static void gfx_d3d11_init(void) {
                   gfx_dxgi_get_h_wnd(), "Failed to create per-draw constant buffer.");
 
     d3d.context->PSSetConstantBuffers(1, 1, d3d.per_draw_cb.GetAddressOf());
+
+    imgui_menu_init();
+    ImGui_ImplWin32_Init(gfx_dxgi_get_h_wnd());
+    ImGui_ImplDX11_Init(d3d.device.Get(), d3d.context.Get());
 }
 
 
@@ -696,6 +705,12 @@ static void gfx_d3d11_start_frame(void) {
 }
 
 static void gfx_d3d11_end_frame(void) {
+    ImGui_ImplDX11_NewFrame();
+    ImGui_ImplWin32_NewFrame();
+    imgui_menu_new_frame();
+    imgui_menu_compose_frame();
+    imgui_menu_render();
+    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 }
 
 static void gfx_d3d11_finish_render(void) {

@@ -299,6 +299,9 @@ ifeq ($(TARGET_N64),1)
   SRC_DIRS += asm lib
 else
   SRC_DIRS += src/pc src/pc/gfx src/pc/audio src/pc/controller
+  ifneq ($(filter 1,$(TARGET_WINDOWS) $(TARGET_LINUX)),)
+    SRC_DIRS += imgui_menu
+  endif
 endif
 BIN_DIRS := bin bin/$(VERSION)
 
@@ -313,9 +316,6 @@ include Makefile.split
 # Source code files
 LEVEL_C_FILES     := $(wildcard levels/*/leveldata.c) $(wildcard levels/*/script.c) $(wildcard levels/*/geo.c)
 C_FILES           := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.c)) $(LEVEL_C_FILES)
-ifneq ($(TARGET_WINDOWS),1)
-  C_FILES := $(filter-out src/pc/parallel_surface_load.c,$(C_FILES))
-endif
 CXX_FILES         := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.cpp))
 S_FILES           := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.s))
 ULTRA_C_FILES     := $(foreach dir,$(ULTRA_SRC_DIRS),$(wildcard $(dir)/*.c))
@@ -478,7 +478,7 @@ PYTHON := python3
 # Platform-specific compiler and linker flags
 ifeq ($(TARGET_WINDOWS),1)
   PLATFORM_CFLAGS  := -DTARGET_WINDOWS
-  PLATFORM_LDFLAGS := -lm -lxinput9_1_0 -lole32 -no-pie -mwindows
+  PLATFORM_LDFLAGS := -lm -lxinput9_1_0 -lole32 -lpthread -no-pie -mwindows
 endif
 ifeq ($(TARGET_LINUX),1)
   PLATFORM_CFLAGS  := -DTARGET_LINUX `pkg-config --cflags libusb-1.0`
@@ -520,11 +520,34 @@ endif
 GFX_CFLAGS += -DWIDESCREEN
 
 CC_CHECK := $(CC) -fsyntax-only -fsigned-char -Wall -Wextra -Wno-format-security -D_LANGUAGE_C $(DEF_INC_CFLAGS) $(PLATFORM_CFLAGS) $(GFX_CFLAGS)
-CFLAGS := $(OPT_FLAGS) -D_LANGUAGE_C $(DEF_INC_CFLAGS) $(PLATFORM_CFLAGS) $(GFX_CFLAGS) -fno-strict-aliasing -fwrapv -march=native
+CFLAGS  := $(OPT_FLAGS) -D_LANGUAGE_C $(DEF_INC_CFLAGS) $(PLATFORM_CFLAGS) $(GFX_CFLAGS) -fno-strict-aliasing -fwrapv -march=native
+CXXFLAGS := -std=c++23
+ifneq ($(filter 1,$(TARGET_WINDOWS) $(TARGET_LINUX)),)
+  CXXFLAGS += -I imgui -I imgui/backends
+endif
 
 ASFLAGS := -I include -I $(BUILD_DIR) $(foreach d,$(DEFINES),--defsym $(d))
 
 LDFLAGS := $(PLATFORM_LDFLAGS) $(GFX_LDFLAGS)
+
+IMGUI_BUILD_DIR := $(BUILD_DIR)/imgui_lib
+IMGUI_LIB       := $(IMGUI_BUILD_DIR)/libimgui.a
+IMGUI_CMAKE_OPTS :=
+ifeq ($(ENABLE_DX11),1)
+  IMGUI_CMAKE_OPTS += -DIMGUI_ENABLE_DX11=ON
+endif
+ifeq ($(ENABLE_DX12),1)
+  IMGUI_CMAKE_OPTS += -DIMGUI_ENABLE_DX12=ON
+endif
+ifeq ($(TARGET_LINUX),1)
+  IMGUI_CMAKE_OPTS += -DIMGUI_TARGET_LINUX=ON
+endif
+ifneq ($(IMGUI_CMAKE_OPTS),)
+  LDFLAGS += -L $(IMGUI_BUILD_DIR) -limgui
+  ifneq ($(filter 1,$(ENABLE_DX11) $(ENABLE_DX12)),)
+    LDFLAGS += -ldwmapi -ld3dcompiler
+  endif
+endif
 
 endif
 
@@ -828,14 +851,26 @@ $(GLOBAL_ASM_DEP).$(NON_MATCHING):
 
 
 #==============================================================================#
+# ImGui static library (built via CMake)                                       #
+#==============================================================================#
+
+$(IMGUI_LIB): imgui/CMakeLists.txt
+	mkdir -p $(IMGUI_BUILD_DIR)
+	cmake -S imgui -B $(IMGUI_BUILD_DIR) -G "Unix Makefiles" \
+	      -DCMAKE_BUILD_TYPE=Release \
+	      -DCMAKE_CXX_STANDARD=23 \
+	      $(IMGUI_CMAKE_OPTS)
+	$(MAKE) -C $(IMGUI_BUILD_DIR)
+
+#==============================================================================#
 # Compilation Recipes                                                          #
 #==============================================================================#
 
 # Compile C/C++ code
 $(BUILD_DIR)/%.o: %.cpp
 	$(call print,Compiling:,$<,$@)
-	@$(CXX) -fsyntax-only $(CFLAGS) -MMD -MP -MT $@ -MF $(BUILD_DIR)/$*.d $<
-	$(V)$(CXX) -c $(CFLAGS) -o $@ $<
+	@$(CXX) -fsyntax-only $(CFLAGS) $(CXXFLAGS) -MMD -MP -MT $@ -MF $(BUILD_DIR)/$*.d $<
+	$(V)$(CXX) -c $(CFLAGS) $(CXXFLAGS) -o $@ $<
 $(BUILD_DIR)/%.o: %.c
 	$(call print,Compiling:,$<,$@)
 	@$(CC_CHECK) $(CC_CHECK_CFLAGS) -MMD -MP -MT $@ -MF $(BUILD_DIR)/$*.d $<
@@ -942,7 +977,7 @@ $(BUILD_DIR)/$(TARGET).objdump: $(ELF)
 	$(OBJDUMP) -D $< > $@
 
 else
-$(EXE): $(O_FILES) $(MIO0_FILES:.mio0=.o) $(ULTRA_O_FILES) $(GODDARD_O_FILES)
+$(EXE): $(O_FILES) $(MIO0_FILES:.mio0=.o) $(ULTRA_O_FILES) $(GODDARD_O_FILES) $(if $(IMGUI_CMAKE_OPTS),$(IMGUI_LIB))
 	$(LD) -L $(BUILD_DIR) -o $@ $(O_FILES) $(ULTRA_O_FILES) $(GODDARD_O_FILES) $(LDFLAGS)
 endif
 

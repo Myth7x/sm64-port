@@ -1,0 +1,11 @@
+short-name: de_dust2
+full-name: de_dust2
+texture-file: []
+area-count: 1
+objects: []
+shared-path: []
+skybox-bin: water
+texture-bin: generic
+effects: false
+actor-bins: []
+common-bin: []

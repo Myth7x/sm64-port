@@ -138,28 +138,32 @@ const char *credits20[] = { "1EXECUTIVE PRODUCER", "HIROSHI YAMAUCHI" };
 
 
 struct CreditsEntry sCreditsSequence[] = {
-    { LEVEL_CASTLE_GROUNDS, 1, 1, -128, { 0, 8000, 0 }, NULL },
-    { LEVEL_BOB, 1, 1, 117, { 713, 3918, -3889 }, credits01 },
-    { LEVEL_WF, 1, 50, 46, { 347, 5376, 326 }, credits02 },
-    { LEVEL_JRB, 1, 18, 22, { 3800, -4840, 2727 }, credits03 },
-    { LEVEL_CCM, 2, 34, 25, { -5464, 6656, -6575 }, credits04 },
-    { LEVEL_BBH, 1, 1, 60, { 257, 1922, 2580 }, credits05 },
-    { LEVEL_HMC, 1, -15, 123, { -6469, 1616, -6054 }, credits06 },
-    { LEVEL_THI, 3, 17, -32, { 508, 1024, 1942 }, credits07 },
-    { LEVEL_LLL, 2, 33, 124, { -73, 82, -1467 }, credits08 },
-    { LEVEL_SSL, 1, 65, 98, { -5906, 1024, -2576 }, credits09 },
-    { LEVEL_DDD, 1, 50, 47, { -4884, -4607, -272 }, credits10 },
-    { LEVEL_SL, 1, 17, -34, { 1925, 3328, 563 }, credits11 },
-    { LEVEL_WDW, 1, 33, 105, { -537, 1850, 1818 }, credits12 },
-    { LEVEL_TTM, 1, 2, -33, { 2613, 313, 1074 }, credits13 },
-    { LEVEL_THI, 1, 51, 54, { -2609, 512, 856 }, credits14 },
-    { LEVEL_TTC, 1, 17, -72, { -1304, -71, -967 }, credits15 },
-    { LEVEL_RR, 1, 33, 64, { 1565, 1024, -148 }, credits16 },
-    { LEVEL_SA, 1, 1, 24, { -1050, -1330, -1559 }, credits17 },
-    { LEVEL_COTMC, 1, 49, -16, { -254, 415, -6045 }, credits18 },
-    { LEVEL_DDD, 2, -111, -64, { 3948, 1185, -104 }, credits19 },
-    { LEVEL_CCM, 1, 33, 31, { 3169, -4607, 5240 }, credits20 },
-    { LEVEL_CASTLE_GROUNDS, 1, 1, -128, { 0, 906, -1200 }, NULL },
+    //{ LEVEL_CASTLE_GROUNDS, 1, 1, -128, { 0, 8000, 0 }, NULL },
+    //{ LEVEL_BOB, 1, 1, 117, { 713, 3918, -3889 }, credits01 },
+    //{ LEVEL_WF, 1, 50, 46, { 347, 5376, 326 }, credits02 },
+    //{ LEVEL_JRB, 1, 18, 22, { 3800, -4840, 2727 }, credits03 },
+    //{ LEVEL_CCM, 2, 34, 25, { -5464, 6656, -6575 }, credits04 },
+    //{ LEVEL_BBH, 1, 1, 60, { 257, 1922, 2580 }, credits05 },
+    //{ LEVEL_HMC, 1, -15, 123, { -6469, 1616, -6054 }, credits06 },
+    //{ LEVEL_THI, 3, 17, -32, { 508, 1024, 1942 }, credits07 },
+    //{ LEVEL_LLL, 2, 33, 124, { -73, 82, -1467 }, credits08 },
+    //{ LEVEL_SSL, 1, 65, 98, { -5906, 1024, -2576 }, credits09 },
+    //{ LEVEL_DDD, 1, 50, 47, { -4884, -4607, -272 }, credits10 },
+    //{ LEVEL_SL, 1, 17, -34, { 1925, 3328, 563 }, credits11 },
+    //{ LEVEL_WDW, 1, 33, 105, { -537, 1850, 1818 }, credits12 },
+    //{ LEVEL_TTM, 1, 2, -33, { 2613, 313, 1074 }, credits13 },
+    //{ LEVEL_THI, 1, 51, 54, { -2609, 512, 856 }, credits14 },
+    //{ LEVEL_TTC, 1, 17, -72, { -1304, -71, -967 }, credits15 },
+    //{ LEVEL_RR, 1, 33, 64, { 1565, 1024, -148 }, credits16 },
+    //{ LEVEL_SA, 1, 1, 24, { -1050, -1330, -1559 }, credits17 },
+    //{ LEVEL_COTMC, 1, 49, -16, { -254, 415, -6045 }, credits18 },
+    //{ LEVEL_DDD, 2, -111, -64, { 3948, 1185, -104 }, credits19 },
+    //{ LEVEL_CCM, 1, 33, 31, { 3169, -4607, 5240 }, credits20 },
+    //{ LEVEL_CASTLE_GROUNDS, 1, 1, -128, { 0, 906, -1200 }, NULL },
+    { LEVEL_BHOP_FUCKAPOY2, 1, 1, -128, { 0, 0, 0 }, NULL },
+    { LEVEL_BHOP_ARCANE, 1, 1, -128, { 0, 0, 0 }, NULL },
+    { LEVEL_SURF_MENTOS, 1, 1, -128, { 0, 0, 0 }, NULL },
+    { LEVEL_DE_DUST2, 1, 1, -128, { 0, 0, 0 }, NULL },
     { LEVEL_NONE, 0, 1, 0, { 0, 0, 0 }, NULL },
 };
 
@@ -897,8 +901,6 @@ void initiate_delayed_warp(void) {
 void update_hud_values(void) {
     if (gCurrCreditsEntry == NULL) {
         s16 numHealthWedges = gMarioState->health > 0 ? gMarioState->health >> 8 : 0;
-        fprintf(stderr, "[update_hud] health=%d wcoin=%d mcoin=%d marioObj=%p\n",
-                gMarioState->health, gHudDisplay.coins, gMarioState->numCoins, (void*)gMarioState->marioObj);
 
         if (gCurrCourseNum >= COURSE_MIN) {
             gHudDisplay.flags |= HUD_DISPLAY_FLAG_COIN_COUNT;
@@ -989,16 +991,11 @@ s32 play_mode_normal(void) {
         gHudDisplay.timer += 1;
     }
 
-    fprintf(stderr, "[play_mode_normal] before area_update_objects gCurrentArea=%p\n", (void*)gCurrentArea);
     area_update_objects();
-    fprintf(stderr, "[play_mode_normal] before update_hud_values\n");
     update_hud_values();
-    fprintf(stderr, "[play_mode_normal] after update_hud_values\n");
 
     if (gCurrentArea != NULL) {
-        fprintf(stderr, "[play_mode_normal] camera=%p update_camera START\n", (void*)gCurrentArea->camera);
         update_camera(gCurrentArea->camera);
-        fprintf(stderr, "[play_mode_normal] update_camera DONE\n");
     }
 
     initiate_painting_warp();
@@ -1172,7 +1169,6 @@ s32 init_level(void) {
     s32 val4 = 0;
 
     gFPSMode = TRUE; // always keep FPS mode active on every level load
-    fprintf(stderr, "[init_level] start: gCurrentArea=%p gMarioState=%p\n", (void*)gCurrentArea, (void*)gMarioState);
 
     set_play_mode(PLAY_MODE_NORMAL);
 
@@ -1196,11 +1192,8 @@ s32 init_level(void) {
         }
     } else {
         if (gPlayerSpawnInfos[0].areaIndex >= 0) {
-            fprintf(stderr, "[init_level] calling load_mario_area, areaIndex=%d\n", gPlayerSpawnInfos[0].areaIndex);
             load_mario_area();
-            fprintf(stderr, "[init_level] after load_mario_area: gCurrentArea=%p\n", (void*)gCurrentArea);
             init_mario();
-            fprintf(stderr, "[init_level] after init_mario: gMarioState->action=%u\n", gMarioState ? gMarioState->action : 0xDEAD);
         }
 
         if (gCurrentArea != NULL) {
@@ -1222,7 +1215,6 @@ s32 init_level(void) {
             play_transition(WARP_TRANSITION_FADE_FROM_STAR, 0x10, 0xFF, 0xFF, 0xFF);
         }
 
-        fprintf(stderr, "[init_level] pre-music: gCurrentArea=%p gCurrDemoInput=%p\n", (void*)gCurrentArea, (void*)gCurrDemoInput);
         if (gCurrDemoInput == NULL && gCurrentArea != NULL) {
             set_background_music(gCurrentArea->musicParam, gCurrentArea->musicParam2, 0);
         }
@@ -1269,10 +1261,10 @@ s32 lvl_init_or_update(s16 initOrUpdate, UNUSED s32 unused) {
  */
 s32 lvl_quickstart(UNUSED s16 arg, UNUSED s32 levelNum) {
     gCurrSaveFileNum = 1;
-    gCurrLevelNum    = LEVEL_BHOP_ARCANE;
+    gCurrLevelNum    = LEVEL_DE_DUST2;
     save_file_set_flags(SAVE_FLAG_FILE_EXISTS);
     gFPSMode = TRUE;
-    return LEVEL_BHOP_ARCANE;
+    return LEVEL_DE_DUST2;
 }
 
 s32 lvl_init_from_save_file(UNUSED s16 arg0, s32 levelNum) {

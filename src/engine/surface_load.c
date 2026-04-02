@@ -662,7 +662,7 @@ void load_area_terrain(s16 index, s16 *data, s8 *surfaceRooms, s16 *macroObjects
     s16 terrainLoadType;
     s16 *vertexData;
     UNUSED s32 unused;
-#ifdef _WIN32
+#ifndef TARGET_N64
     {
         extern void load_area_terrain_parallel(s16, s16 *, s8 *, s16 *);
         load_area_terrain_parallel(index, data, surfaceRooms, macroObjects);

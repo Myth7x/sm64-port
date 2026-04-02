@@ -1,6 +1,13 @@
 #include <ultra64.h>
 #include <stdio.h>
+#include <time.h>
 
+#ifndef TARGET_N64
+#include <pthread.h>
+#include <sched.h>
+#include <stdatomic.h>
+#include "pc/gfx/gfx_pc.h"
+#endif
 #include "sm64.h"
 #include "gfx_dimensions.h"
 #include "audio/external.h"
@@ -58,6 +65,31 @@ uintptr_t gPhysicalZBuffer;
 
 // Mario Anims and Demo allocation
 void *gMarioAnimsMemAlloc;
+
+#ifndef TARGET_N64
+volatile int gLevelLoadingActive = 0;
+
+static pthread_t      sLevelScriptThread;
+static pthread_mutex_t sWorkMtx  = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t  sWorkCond = PTHREAD_COND_INITIALIZER;
+static int             sWorkPending = 0;
+static _Atomic int     sWorkDone    = 1;
+static struct LevelCommand *sLevelScriptArg;
+static struct LevelCommand *sLevelScriptRet;
+
+static void *level_script_worker(void *arg) {
+    (void)arg;
+    for (;;) {
+        pthread_mutex_lock(&sWorkMtx);
+        while (sWorkPending == 0) pthread_cond_wait(&sWorkCond, &sWorkMtx);
+        if (sWorkPending == 2) { pthread_mutex_unlock(&sWorkMtx); return NULL; }
+        sWorkPending = 0;
+        pthread_mutex_unlock(&sWorkMtx);
+        sLevelScriptRet = level_script_execute(sLevelScriptArg);
+        atomic_store_explicit(&sWorkDone, 1, memory_order_release);
+    }
+}
+#endif
 void *gDemoInputsMemAlloc;
 struct DmaHandlerList gMarioAnimsBuf;
 struct DmaHandlerList gDemoInputsBuf;
@@ -392,13 +424,11 @@ void select_gfx_pool(void) {
 void display_and_vsync(void) {
     profiler_log_thread5_time(BEFORE_DISPLAY_LISTS);
     osRecvMesg(&gGfxVblankQueue, &gMainReceivedMesg, OS_MESG_BLOCK);
-    fprintf(stderr, "[display_vsync] GoddardCB=%p exec_display_list\n", (void*)gGoddardVblankCallback);
     if (gGoddardVblankCallback != NULL) {
         gGoddardVblankCallback();
         gGoddardVblankCallback = NULL;
     }
     exec_display_list(&gGfxPool->spTask);
-    fprintf(stderr, "[display_vsync] exec done, swap\n");
     profiler_log_thread5_time(AFTER_DISPLAY_LISTS);
     osRecvMesg(&gGameVblankQueue, &gMainReceivedMesg, OS_MESG_BLOCK);
     osViSwapBuffer((void *) PHYSICAL_TO_VIRTUAL(gPhysicalFrameBuffers[sRenderedFramebuffer]));
@@ -704,6 +734,7 @@ void thread5_game_loop(UNUSED void *arg) {
 
     while (TRUE) {
 #else
+    pthread_create(&sLevelScriptThread, NULL, level_script_worker, NULL);
     gGlobalTimer++;
 }
 
@@ -732,11 +763,31 @@ void game_loop_one_iteration(void) {
         audio_game_loop_tick();
         select_gfx_pool();
         read_controller_inputs();
-        fprintf(stderr, "[game_loop] level_script_execute START\n");
+#ifdef TARGET_N64
         levelCommandAddr = level_script_execute(levelCommandAddr);
-        fprintf(stderr, "[game_loop] display_and_vsync START\n");
+#else
+        gLevelLoadingActive = 1;
+        atomic_store_explicit(&sWorkDone, 0, memory_order_relaxed);
+        sLevelScriptArg = levelCommandAddr;
+        pthread_mutex_lock(&sWorkMtx);
+        sWorkPending = 1;
+        pthread_cond_signal(&sWorkCond);
+        pthread_mutex_unlock(&sWorkMtx);
+        clock_t waitStart = clock();
+        clock_t uiTick = waitStart;
+        while (!atomic_load_explicit(&sWorkDone, memory_order_acquire)) {
+            sched_yield();
+            clock_t now = clock();
+            s32 waitMs = (s32) (((now - waitStart) * 1000) / CLOCKS_PER_SEC);
+            if (waitMs >= 100 && (now - uiTick) * 1000 / CLOCKS_PER_SEC >= 16) {
+                gfx_imgui_frame();
+                uiTick = now;
+            }
+        }
+        levelCommandAddr = sLevelScriptRet;
+        gLevelLoadingActive = 0;
+#endif
         display_and_vsync();
-        fprintf(stderr, "[game_loop] display_and_vsync DONE\n");
 
         // when debug info is enabled, print the "BUF %d" information.
         if (gShowDebugText) {

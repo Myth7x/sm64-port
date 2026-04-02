@@ -39,6 +39,11 @@
 
 #include "gfx_screen_config.h"
 
+#include "imgui.h"
+#include "imgui_impl_win32.h"
+#include "imgui_impl_dx12.h"
+#include "imgui_menu/imgui_menu.h"
+
 #define DEBUG_D3D 0
 
 using namespace Microsoft::WRL; // For ComPtr
@@ -125,6 +130,7 @@ static struct {
     UINT srv_descriptor_size;
     ComPtr<ID3D12DescriptorHeap> sampler_heap;
     UINT sampler_descriptor_size;
+    ComPtr<ID3D12DescriptorHeap> imgui_srv_heap;
     
     std::map<std::pair<uint32_t, uint32_t>, std::list<struct TextureHeap>> texture_heaps;
     
@@ -866,6 +872,22 @@ static void gfx_direct3d12_init(void ) {
         CD3DX12_RANGE read_range(0, 0); // Read not possible from CPU
         ThrowIfFailed(d3d.vertex_buffer->Map(0, &read_range, &d3d.mapped_vbuf_address));
     }
+
+    {
+        D3D12_DESCRIPTOR_HEAP_DESC imgui_heap_desc = {};
+        imgui_heap_desc.NumDescriptors = 1;
+        imgui_heap_desc.Type  = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+        imgui_heap_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+        ThrowIfFailed(d3d.device->CreateDescriptorHeap(&imgui_heap_desc, IID_PPV_ARGS(&d3d.imgui_srv_heap)));
+    }
+    imgui_menu_init();
+    ImGui_ImplWin32_Init(gfx_dxgi_get_h_wnd());
+    ImGui_ImplDX12_Init(
+        d3d.device.Get(), 2,
+        DXGI_FORMAT_R8G8B8A8_UNORM,
+        d3d.imgui_srv_heap.Get(),
+        d3d.imgui_srv_heap->GetCPUDescriptorHandleForHeapStart(),
+        d3d.imgui_srv_heap->GetGPUDescriptorHandleForHeapStart());
 }
 
 static void gfx_direct3d12_end_frame(void) {
@@ -881,7 +903,18 @@ static void gfx_direct3d12_end_frame(void) {
         d3d.copy_command_queue->ExecuteCommandLists(1, lists);
         d3d.copy_command_queue->Signal(d3d.copy_fence.Get(), ++d3d.copy_fence_value);
     }
-    
+
+    {
+        ImGui_ImplDX12_NewFrame();
+        ImGui_ImplWin32_NewFrame();
+        imgui_menu_new_frame();
+        imgui_menu_compose_frame();
+        imgui_menu_render();
+        ID3D12DescriptorHeap *heaps[] = { d3d.imgui_srv_heap.Get() };
+        d3d.command_list->SetDescriptorHeaps(1, heaps);
+        ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), d3d.command_list.Get());
+    }
+
     CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
         d3d.render_targets[d3d.frame_index].Get(),
         D3D12_RESOURCE_STATE_RENDER_TARGET,

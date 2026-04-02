@@ -18,8 +18,7 @@
 #include "level_misc_macros.h"
 #include "level_table.h"
 #include "level_update.h"
-#include "levels/bob/header.h"
-#include "levels/ttm/header.h"
+#include "removed_level_stubs.h"
 #include "mario.h"
 #include "mario_actions_cutscene.h"
 #include "mario_misc.h"
@@ -68,9 +67,6 @@ s16 sPrevCheckMarioRoom = 0;
  * Tracks whether or not Yoshi has walked/jumped off the roof.
  */
 s8 sYoshiDead = FALSE;
-
-extern void *ccm_seg7_trajectory_snowman;
-extern void *inside_castle_seg7_trajectory_mips;
 
 /**
  * Resets yoshi as spawned/despawned upon new file select.

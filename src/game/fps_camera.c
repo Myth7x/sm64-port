@@ -51,7 +51,40 @@ void fps_toggle_noclip(void) {
 }
 
 void fps_teleport_to_map_center(void) {
-    
+    if (gMarioState == NULL) return;
+
+    f64 sumX = 0.0, sumZ = 0.0;
+    s32 count = 0;
+    s32 ci, cj;
+    for (ci = 0; ci < NUM_CELLS; ci++) {
+        for (cj = 0; cj < NUM_CELLS; cj++) {
+            struct SurfaceNode *node;
+            for (node = gStaticSurfacePartition[ci][cj][SPATIAL_PARTITION_FLOORS].next;
+                 node != NULL; node = node->next) {
+                struct Surface *s = node->surface;
+                sumX += (s->vertex1[0] + s->vertex2[0] + s->vertex3[0]) / 3.0;
+                sumZ += (s->vertex1[2] + s->vertex2[2] + s->vertex3[2]) / 3.0;
+                count++;
+            }
+        }
+    }
+
+    f32 cx = (count > 0) ? (f32)(sumX / count) : 0.0f;
+    f32 cz = (count > 0) ? (f32)(sumZ / count) : 0.0f;
+
+    struct Surface *floor;
+    f32 floorY = find_floor(cx, 20000.0f, cz, &floor);
+    if (floor == NULL) floorY = 0.0f;
+
+    gMarioState->pos[0] = cx;
+    gMarioState->pos[1] = floorY + 320.0f;
+    gMarioState->pos[2] = cz;
+    gMarioState->vel[0] = 0.0f;
+    gMarioState->vel[1] = 0.0f;
+    gMarioState->vel[2] = 0.0f;
+    gMarioState->forwardVel = 0.0f;
+    gMarioState->floorHeight = floorY;
+    gMarioState->floor = floor;
 }
 
 /* -----------------------------------------------------------------------
@@ -166,6 +199,9 @@ const char *level_get_string(void) {
 }
 
 void fps_draw_hud(void) {
+#if defined(ENABLE_DX11) || defined(ENABLE_DX12) || defined(TARGET_LINUX)
+    return;
+#else
     if (!gFPSMode || gMarioState == NULL) {
         return;
     }
@@ -200,5 +236,6 @@ void fps_draw_hud(void) {
         print_text_fmt_int(20, 36, "FPS N/A", 0);
     }
     gLastOSTime = newTime;
+#endif
 #endif
 }

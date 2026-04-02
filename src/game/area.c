@@ -260,11 +260,8 @@ void unload_area(void) {
 
 void load_mario_area(void) {
     stop_sounds_in_continuous_banks();
-    fprintf(stderr, "[load_mario_area] sound banks stopped\n");
-    time_t now = time(NULL);
     load_area(gMarioSpawnInfo->areaIndex);
     if (gCurrentArea->index == gMarioSpawnInfo->areaIndex) {
-        fprintf(stderr, "[load_mario_area] mario area loaded in %f seconds\n", difftime(time(NULL), now));
         gCurrentArea->flags |= 0x01;
         spawn_objects_from_info(0, gMarioSpawnInfo);
     }

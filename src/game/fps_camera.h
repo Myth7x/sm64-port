@@ -48,6 +48,7 @@ void fps_toggle_noclip(void);
  * flushes the queued glyphs in the same frame.
  */
 void fps_draw_hud(void);
+const char *level_get_string(void);
 
 void fps_teleport_to_map_center(void);
 
