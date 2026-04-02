@@ -113,9 +113,19 @@ const LevelScript level_main_scripts_entry[] = {
     LOAD_MODEL_FROM_GEO(MODEL_DIRT_ANIMATION,          dirt_animation_geo),
     LOAD_MODEL_FROM_GEO(MODEL_CARTOON_STAR,            cartoon_star_geo),
     FREE_LEVEL_POOL(),
-    CALL(/*arg*/ 0, /*func*/ lvl_init_from_save_file),
+    /* ------ FPS quick-start: skip intro, title screen, and file select ------ *
+     * 1. SET_REG(1) + GET_OR_SET force gCurrSaveFileNum=1 before              *
+     *    lvl_init_from_save_file runs, so Mario is initialised from slot 1.   *
+     * 2. lvl_quickstart marks file 1 as existing (→ ACT_IDLE, not cutscene), *
+     *    enables gFPSMode, and returns LEVEL_CASTLE_GROUNDS to seed the loop. *
+     * 3. The loop executes whatever level sRegister holds; when the player    *
+     *    warps, the C warp system sets sRegister = destination level num so   *
+     *    the next iteration runs the new level automatically.                 */
+    SET_REG(/*value*/ 1),
+    GET_OR_SET(/*op*/ OP_SET, /*var*/ VAR_CURR_SAVE_FILE_NUM),
+    CALL(/*arg*/ 0, /*func*/ lvl_quickstart),        // mark file existing FIRST
+    CALL(/*arg*/ 0, /*func*/ lvl_init_from_save_file), // now sees file → ACT_IDLE
     LOOP_BEGIN(),
-        EXECUTE(/*seg*/ 0x14, _menuSegmentRomStart, _menuSegmentRomEnd, level_main_menu_entry_2),
         JUMP_LINK(script_exec_level_table),
         SLEEP(/*frames*/ 1),
     LOOP_UNTIL(/*op*/ OP_LT, /*arg*/ 0),

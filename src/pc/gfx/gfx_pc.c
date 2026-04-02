@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
 #include <assert.h>
@@ -290,7 +291,14 @@ static bool gfx_texture_cache_lookup(int tile, struct TextureHashmapNode **n, co
 
 static void import_texture_rgba16(int tile) {
     uint8_t rgba32_buf[8192];
-    
+    if (rdp.loaded_texture[tile].addr == NULL) {
+        fprintf(stderr, "[gfx] import_texture_rgba16: NULL addr on tile %d size=%u\n", tile, rdp.loaded_texture[tile].size_bytes);
+        memset(rgba32_buf, 0xff, sizeof(rgba32_buf));
+        uint32_t width = rdp.texture_tile.line_size_bytes / 2;
+        uint32_t height = rdp.texture_tile.line_size_bytes ? rdp.loaded_texture[tile].size_bytes / rdp.texture_tile.line_size_bytes : 1;
+        if (width > 0 && height > 0) gfx_rapi->upload_texture(rgba32_buf, width, height);
+        return;
+    }
     for (uint32_t i = 0; i < rdp.loaded_texture[tile].size_bytes / 2; i++) {
         uint16_t col16 = (rdp.loaded_texture[tile].addr[2 * i] << 8) | rdp.loaded_texture[tile].addr[2 * i + 1];
         uint8_t a = col16 & 1;
@@ -1025,6 +1033,9 @@ static void gfx_dp_set_scissor(uint32_t mode, uint32_t ulx, uint32_t uly, uint32
 }
 
 static void gfx_dp_set_texture_image(uint32_t format, uint32_t size, uint32_t width, const void* addr) {
+    if (addr == NULL) {
+        fprintf(stderr, "[gfx] G_SETTIMG with NULL addr! fmt=%u siz=%u w=%u\n", format, size, width);
+    }
     rdp.texture_to_load.addr = addr;
     rdp.texture_to_load.siz = size;
 }

@@ -33,6 +33,12 @@
 #include "sound_init.h"
 #include "rumble_init.h"
 
+/* ======= FPS mode : Source-engine movement + first-person camera ======= */
+#include "fps_mode.h"
+#include "fps_camera.h"
+#include "source_movement.h"
+/* ======================================================================= */
+
 u32 unused80339F10;
 s8 filler80339F1C[20];
 
@@ -1700,13 +1706,37 @@ s32 execute_mario_action(UNUSED struct Object *o) {
     s32 inLoop = TRUE;
 
     if (gMarioState->action) {
-        gMarioState->marioObj->header.gfx.node.flags &= ~GRAPH_RENDER_INVISIBLE;
-        mario_reset_bodystate(gMarioState);
-        update_mario_inputs(gMarioState);
-        mario_handle_special_floors(gMarioState);
-        mario_process_interactions(gMarioState);
+        /* --- FPS Stage 1: integrate mouse and set camera->yaw BEFORE input update --- */
+        if (gFPSMode && gMarioState->area != NULL) {
+            fps_camera_process_mouse(gMarioState->area->camera);
+        }
 
-        // If Mario is OOB, stop executing actions.
+        /* Hide Mario's model in FPS mode; restore it when FPS mode is off. */
+        if (gMarioState->marioObj != NULL) {
+            if (gFPSMode) {
+                gMarioState->marioObj->header.gfx.node.flags |=  GRAPH_RENDER_INVISIBLE;
+            } else {
+                gMarioState->marioObj->header.gfx.node.flags &= ~GRAPH_RENDER_INVISIBLE;
+            }
+        }
+
+        mario_reset_bodystate(gMarioState);
+        update_mario_inputs(gMarioState);        /* intendedYaw now uses correct c->yaw */
+        mario_handle_special_floors(gMarioState);
+        mario_process_interactions(gMarioState); /* coins/enemies/etc. work in FPS mode */
+
+        /* --- FPS Stage 2: Source physics replaces the SM64 action dispatch loop --- */
+        if (gFPSMode) {
+            if (gNoclipMode || gMarioState->floor != NULL) {
+                src_fps_movement(gMarioState);
+            }
+            update_mario_health(gMarioState);
+            update_mario_info_for_cam(gMarioState);
+            mario_update_hitbox_and_cap_model(gMarioState);
+            return 0;
+        }
+
+        /* If Mario is OOB, stop executing actions. */
         if (gMarioState->floor == NULL) {
             return 0;
         }

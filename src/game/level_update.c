@@ -28,6 +28,8 @@
 #include "level_table.h"
 #include "course_table.h"
 #include "rumble_init.h"
+#include "fps_mode.h"
+#include <stdio.h>
 
 #define PLAY_MODE_NORMAL 0
 #define PLAY_MODE_PAUSED 2
@@ -895,6 +897,8 @@ void initiate_delayed_warp(void) {
 void update_hud_values(void) {
     if (gCurrCreditsEntry == NULL) {
         s16 numHealthWedges = gMarioState->health > 0 ? gMarioState->health >> 8 : 0;
+        fprintf(stderr, "[update_hud] health=%d wcoin=%d mcoin=%d marioObj=%p\n",
+                gMarioState->health, gHudDisplay.coins, gMarioState->numCoins, (void*)gMarioState->marioObj);
 
         if (gCurrCourseNum >= COURSE_MIN) {
             gHudDisplay.flags |= HUD_DISPLAY_FLAG_COIN_COUNT;
@@ -985,11 +989,16 @@ s32 play_mode_normal(void) {
         gHudDisplay.timer += 1;
     }
 
+    fprintf(stderr, "[play_mode_normal] before area_update_objects gCurrentArea=%p\n", (void*)gCurrentArea);
     area_update_objects();
+    fprintf(stderr, "[play_mode_normal] before update_hud_values\n");
     update_hud_values();
+    fprintf(stderr, "[play_mode_normal] after update_hud_values\n");
 
     if (gCurrentArea != NULL) {
+        fprintf(stderr, "[play_mode_normal] camera=%p update_camera START\n", (void*)gCurrentArea->camera);
         update_camera(gCurrentArea->camera);
+        fprintf(stderr, "[play_mode_normal] update_camera DONE\n");
     }
 
     initiate_painting_warp();
@@ -1162,6 +1171,9 @@ s32 update_level(void) {
 s32 init_level(void) {
     s32 val4 = 0;
 
+    gFPSMode = TRUE; // always keep FPS mode active on every level load
+    fprintf(stderr, "[init_level] start: gCurrentArea=%p gMarioState=%p\n", (void*)gCurrentArea, (void*)gMarioState);
+
     set_play_mode(PLAY_MODE_NORMAL);
 
     sDelayedWarpOp = WARP_OP_NONE;
@@ -1184,8 +1196,11 @@ s32 init_level(void) {
         }
     } else {
         if (gPlayerSpawnInfos[0].areaIndex >= 0) {
+            fprintf(stderr, "[init_level] calling load_mario_area, areaIndex=%d\n", gPlayerSpawnInfos[0].areaIndex);
             load_mario_area();
+            fprintf(stderr, "[init_level] after load_mario_area: gCurrentArea=%p\n", (void*)gCurrentArea);
             init_mario();
+            fprintf(stderr, "[init_level] after init_mario: gMarioState->action=%u\n", gMarioState ? gMarioState->action : 0xDEAD);
         }
 
         if (gCurrentArea != NULL) {
@@ -1195,12 +1210,8 @@ s32 init_level(void) {
                 set_mario_action(gMarioState, ACT_IDLE, 0);
             } else if (!gDebugLevelSelect) {
                 if (gMarioState->action != ACT_UNINITIALIZED) {
-                    if (save_file_exists(gCurrSaveFileNum - 1)) {
-                        set_mario_action(gMarioState, ACT_IDLE, 0);
-                    } else {
-                        set_mario_action(gMarioState, ACT_INTRO_CUTSCENE, 0);
-                        val4 = 1;
-                    }
+                    // Always spawn idle — skip the Lakitu intro cutscene.
+                    set_mario_action(gMarioState, ACT_IDLE, 0);
                 }
             }
         }
@@ -1211,7 +1222,8 @@ s32 init_level(void) {
             play_transition(WARP_TRANSITION_FADE_FROM_STAR, 0x10, 0xFF, 0xFF, 0xFF);
         }
 
-        if (gCurrDemoInput == NULL) {
+        fprintf(stderr, "[init_level] pre-music: gCurrentArea=%p gCurrDemoInput=%p\n", (void*)gCurrentArea, (void*)gCurrDemoInput);
+        if (gCurrDemoInput == NULL && gCurrentArea != NULL) {
             set_background_music(gCurrentArea->musicParam, gCurrentArea->musicParam2, 0);
         }
     }
@@ -1246,6 +1258,23 @@ s32 lvl_init_or_update(s16 initOrUpdate, UNUSED s32 unused) {
     return result;
 }
 
+/**
+ * Quickstart: skips the title screen, intro, and file-select.
+ *
+ * Called ONCE from level_main_scripts_entry before the main level loop.
+ * Sets save-file 1 as the active, existing file so init_level() assigns
+ * ACT_IDLE (not ACT_INTRO_CUTSCENE), sets gCurrLevelNum = LEVEL_CASTLE_GROUNDS
+ * so script_exec_level_table's GET_OR_SET(OP_GET) finds the right level,
+ * and enables FPS mode immediately.
+ */
+s32 lvl_quickstart(UNUSED s16 arg, UNUSED s32 levelNum) {
+    gCurrSaveFileNum = 1;
+    gCurrLevelNum    = LEVEL_CASTLE_GROUNDS;
+    save_file_set_flags(SAVE_FLAG_FILE_EXISTS);
+    gFPSMode = TRUE;
+    return LEVEL_CASTLE_GROUNDS;
+}
+
 s32 lvl_init_from_save_file(UNUSED s16 arg0, s32 levelNum) {
 #ifdef VERSION_EU
     s16 var = eu_get_language();
@@ -1266,7 +1295,7 @@ s32 lvl_init_from_save_file(UNUSED s16 arg0, s32 levelNum) {
 #endif
     sWarpDest.type = WARP_TYPE_NOT_WARPING;
     sDelayedWarpOp = WARP_OP_NONE;
-    gNeverEnteredCastle = !save_file_exists(gCurrSaveFileNum - 1);
+    gNeverEnteredCastle = FALSE; // always treat castle as already visited
 
     gCurrLevelNum = levelNum;
     gCurrCourseNum = COURSE_NONE;

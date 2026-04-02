@@ -27,6 +27,10 @@
 #include "gfx_window_manager_api.h"
 #include "gfx_screen_config.h"
 
+/* FPS mode: mouse capture and toggle callbacks */
+#include "../mouse.h"
+#include "../../game/fps_camera.h"
+
 #define GFX_API_NAME "SDL2 - OpenGL"
 
 static SDL_Window *wnd;
@@ -195,6 +199,9 @@ static void gfx_sdl_init(const char *game_name, bool start_in_fullscreen) {
         inverted_scancode_table[scancode_rmapping_extended[i][0]] = inverted_scancode_table[scancode_rmapping_extended[i][1]];
         inverted_scancode_table[scancode_rmapping_extended[i][1]] += 0x100;
     }
+
+    /* Lock and hide the OS cursor for FPS mouse-look. */
+    SDL_SetRelativeMouseMode(SDL_TRUE);
 }
 
 static void gfx_sdl_set_fullscreen_changed_callback(void (*on_fullscreen_changed)(bool is_now_fullscreen)) {
@@ -255,10 +262,31 @@ static void gfx_sdl_handle_events(void) {
                     set_fullscreen(!fullscreen_state, true);
                     break;
                 }
+                /* F  – toggle FPS mode on/off */
+                if (event.key.keysym.scancode == SDL_SCANCODE_F) {
+                    fps_toggle_mode();
+                }
+                /* V  – toggle noclip */
+                if (event.key.keysym.scancode == SDL_SCANCODE_V) {
+                    fps_toggle_noclip();
+                }
+                /* Escape – release mouse capture when not in FPS mode */
+                if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
+                    SDL_SetRelativeMouseMode(SDL_FALSE);
+                    break;
+                }
                 gfx_sdl_onkeydown(event.key.keysym.scancode);
                 break;
             case SDL_KEYUP:
                 gfx_sdl_onkeyup(event.key.keysym.scancode);
+                break;
+            case SDL_MOUSEMOTION:
+                mouse_accum(event.motion.xrel, event.motion.yrel);
+                break;
+            case SDL_MOUSEBUTTONDOWN:
+                /* Re-acquire relative mouse mode when the user clicks back into
+                 * the window after Escape released the cursor. */
+                SDL_SetRelativeMouseMode(SDL_TRUE);
                 break;
 #endif
             case SDL_WINDOWEVENT:

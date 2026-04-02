@@ -1,4 +1,5 @@
 #include <ultra64.h>
+#include <stdio.h>
 
 #include "sm64.h"
 #include "gfx_dimensions.h"
@@ -391,11 +392,13 @@ void select_gfx_pool(void) {
 void display_and_vsync(void) {
     profiler_log_thread5_time(BEFORE_DISPLAY_LISTS);
     osRecvMesg(&gGfxVblankQueue, &gMainReceivedMesg, OS_MESG_BLOCK);
+    fprintf(stderr, "[display_vsync] GoddardCB=%p exec_display_list\n", (void*)gGoddardVblankCallback);
     if (gGoddardVblankCallback != NULL) {
         gGoddardVblankCallback();
         gGoddardVblankCallback = NULL;
     }
     exec_display_list(&gGfxPool->spTask);
+    fprintf(stderr, "[display_vsync] exec done, swap\n");
     profiler_log_thread5_time(AFTER_DISPLAY_LISTS);
     osRecvMesg(&gGameVblankQueue, &gMainReceivedMesg, OS_MESG_BLOCK);
     osViSwapBuffer((void *) PHYSICAL_TO_VIRTUAL(gPhysicalFrameBuffers[sRenderedFramebuffer]));
@@ -729,9 +732,11 @@ void game_loop_one_iteration(void) {
         audio_game_loop_tick();
         select_gfx_pool();
         read_controller_inputs();
+        fprintf(stderr, "[game_loop] level_script_execute START\n");
         levelCommandAddr = level_script_execute(levelCommandAddr);
-
+        fprintf(stderr, "[game_loop] display_and_vsync START\n");
         display_and_vsync();
+        fprintf(stderr, "[game_loop] display_and_vsync DONE\n");
 
         // when debug info is enabled, print the "BUF %d" information.
         if (gShowDebugText) {

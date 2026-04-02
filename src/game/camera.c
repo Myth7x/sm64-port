@@ -29,6 +29,11 @@
 #include "engine/graph_node.h"
 #include "level_table.h"
 
+/* ======= FPS mode: first-person camera bypass ======= */
+#include "fps_mode.h"
+#include "fps_camera.h"
+/* ==================================================== */
+
 #define CBUTTON_MASK (U_CBUTTONS | D_CBUTTONS | L_CBUTTONS | R_CBUTTONS)
 
 /**
@@ -3019,6 +3024,14 @@ void update_camera(struct Camera *c) {
     UNUSED u8 unused[24];
 
     gCamera = c;
+
+    /* === FPS mode: write eye position to gLakituState and skip SM64 camera === */
+    if (gFPSMode) {
+        fps_camera_update(c);
+        return;
+    }
+    /* ========================================================================= */
+
     update_camera_hud_status(c);
     if (c->cutscene == 0) {
         // Only process R_TRIG if 'fixed' is not selected in the menu
@@ -11469,6 +11482,9 @@ Gfx *geo_camera_fov(s32 callContext, struct GraphNode *g, UNUSED void *context) 
     }
 
     perspective->fov = sFOVState.fov;
+    if (gFPSMode) {
+        perspective->fov = 65.0f;
+    }
     shake_camera_fov(perspective);
     return NULL;
 }

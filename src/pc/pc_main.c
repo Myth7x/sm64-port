@@ -1,4 +1,16 @@
 #include <stdlib.h>
+#include <stdio.h>
+#include <signal.h>
+#include <execinfo.h>
+
+static void crash_handler(int sig) {
+    void *bt[64];
+    int n = backtrace(bt, 64);
+    fprintf(stderr, "\n=== SIGNAL %d ===\n", sig);
+    backtrace_symbols_fd(bt, n, 2);
+    fprintf(stderr, "=== END ===\n");
+    _exit(1);
+}
 
 #ifdef TARGET_WEB
 #include <emscripten.h>
@@ -141,6 +153,8 @@ static void on_fullscreen_changed(bool is_now_fullscreen) {
 }
 
 void main_func(void) {
+    signal(SIGSEGV, crash_handler);
+    signal(SIGBUS, crash_handler);
 #ifdef USE_SYSTEM_MALLOC
     main_pool_init();
     gGfxAllocOnlyPool = alloc_only_pool_init();

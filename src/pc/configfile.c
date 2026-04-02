@@ -31,9 +31,11 @@ struct ConfigOption {
  */
 bool configFullscreen            = false;
 // Keyboard mappings (scancode values)
-unsigned int configKeyA          = 0x26;
+// 0x39 = Space: used for jump (A button) and FPS-mode vertical ascend in noclip.
+unsigned int configKeyA          = 0x39;
 unsigned int configKeyB          = 0x33;
-unsigned int configKeyStart      = 0x39;
+// 0x153 = Delete: mapped to Start button.
+unsigned int configKeyStart      = 0x153;
 unsigned int configKeyR          = 0x36;
 unsigned int configKeyZ          = 0x25;
 unsigned int configKeyCUp        = 0x148;

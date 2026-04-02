@@ -168,7 +168,7 @@ endif
 
 # OPT_FLAGS - for ports
 ifeq ($(TARGET_N64),0)
-  OPT_FLAGS := -O2
+  OPT_FLAGS := -O1 -g
   ifeq ($(TARGET_WEB),1)
     OPT_FLAGS += -g4 --source-map-base http://localhost:8080/
   endif
@@ -479,7 +479,7 @@ ifeq ($(TARGET_WINDOWS),1)
 endif
 ifeq ($(TARGET_LINUX),1)
   PLATFORM_CFLAGS  := -DTARGET_LINUX `pkg-config --cflags libusb-1.0`
-  PLATFORM_LDFLAGS := -lm -lpthread `pkg-config --libs libusb-1.0` -lasound -lpulse -no-pie
+  PLATFORM_LDFLAGS := -lm -lpthread `pkg-config --libs libusb-1.0` -lasound -lpulse -no-pie -rdynamic
 endif
 ifeq ($(TARGET_WEB),1)
   PLATFORM_CFLAGS  := -DTARGET_WEB

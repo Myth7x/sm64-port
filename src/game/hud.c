@@ -13,6 +13,7 @@
 #include "area.h"
 #include "save_file.h"
 #include "print.h"
+#include "fps_camera.h"
 
 /* @file hud.c
  * This file implements HUD rendering and power meter animations.
@@ -475,5 +476,9 @@ void render_hud(void) {
         if (hudDisplayFlags & HUD_DISPLAY_FLAG_TIMER) {
             render_hud_timer();
         }
+
+        /* FPS mode overlay: speed and position in bottom-left corner.
+         * Must be inside the else block so create_dl_ortho_matrix() has run. */
+        fps_draw_hud();
     }
 }
