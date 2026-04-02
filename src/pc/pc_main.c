@@ -1,14 +1,20 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <signal.h>
+#if defined(__linux__) || defined(__APPLE__)
 #include <execinfo.h>
+#endif
 
 static void crash_handler(int sig) {
+#if defined(__linux__) || defined(__APPLE__)
     void *bt[64];
     int n = backtrace(bt, 64);
     fprintf(stderr, "\n=== SIGNAL %d ===\n", sig);
     backtrace_symbols_fd(bt, n, 2);
     fprintf(stderr, "=== END ===\n");
+#else
+    fprintf(stderr, "\n=== SIGNAL %d ===\n", sig);
+#endif
     _exit(1);
 }
 
@@ -154,7 +160,9 @@ static void on_fullscreen_changed(bool is_now_fullscreen) {
 
 void main_func(void) {
     signal(SIGSEGV, crash_handler);
+#ifdef SIGBUS
     signal(SIGBUS, crash_handler);
+#endif
 #ifdef USE_SYSTEM_MALLOC
     main_pool_init();
     gGfxAllocOnlyPool = alloc_only_pool_init();
