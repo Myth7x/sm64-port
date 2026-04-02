@@ -1,0 +1,11 @@
+short-name: bhop_bob_v1
+full-name: bhop_bob_v1
+texture-file: []
+area-count: 1
+objects: []
+shared-path: []
+skybox-bin: water
+texture-bin: generic
+effects: false
+actor-bins: []
+common-bin: []
