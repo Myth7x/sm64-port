@@ -299,6 +299,13 @@ static bool gfx_glx_check_extension(const char *extensions, const char *extensio
     return false;
 }
 
+static int s_glx_ctx_error = 0;
+static int s_glx_ctx_error_handler(Display *d, XErrorEvent *e) {
+    (void)d; (void)e;
+    s_glx_ctx_error = 1;
+    return 0;
+}
+
 static void gfx_glx_init(const char *game_name, bool start_in_fullscreen) {
     // On NVIDIA proprietary driver, make the driver queue up to two frames on glXSwapBuffers,
     // which means that glXSwapBuffers should be non-blocking,
@@ -337,7 +344,28 @@ static void gfx_glx_init(const char *game_name, bool start_in_fullscreen) {
     int len = sprintf(title, "%s (%s)", game_name, GFX_API_NAME);
 
     XStoreName(glx.dpy, glx.win, title);
+
+    // Try direct rendering first; fall back to indirect if the server rejects it.
+    // An X protocol error (BadValue) can be fired when direct rendering is
+    // unavailable (e.g. XWayland, software renderers).  Install a temporary
+    // error handler so the process does not abort.
+    s_glx_ctx_error = 0;
+    XErrorHandler old_handler = XSetErrorHandler(s_glx_ctx_error_handler);
     GLXContext glc = glXCreateContext(glx.dpy, vi, NULL, GL_TRUE);
+    XSync(glx.dpy, False);
+    XSetErrorHandler(old_handler);
+    if (!glc || s_glx_ctx_error) {
+        fprintf(stderr, "Direct GLX rendering unavailable, falling back to indirect\n");
+        s_glx_ctx_error = 0;
+        old_handler = XSetErrorHandler(s_glx_ctx_error_handler);
+        glc = glXCreateContext(glx.dpy, vi, NULL, GL_FALSE);
+        XSync(glx.dpy, False);
+        XSetErrorHandler(old_handler);
+    }
+    if (!glc) {
+        fprintf(stderr, "Failed to create GLX context\n");
+        exit(1);
+    }
     glXMakeCurrent(glx.dpy, glx.win, glc);
     
     init_keymap();

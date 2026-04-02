@@ -167,7 +167,13 @@ void main_func(void) {
 #elif defined(ENABLE_OPENGL)
     rendering_api = &gfx_opengl_api;
     #if defined(__linux__) || defined(__BSD__)
-        wm_api = &gfx_glx;
+        // Prefer GLX on X11, but fall back to SDL2 when running under Wayland
+        // (XWayland's GLX implementation often rejects context creation).
+        if (getenv("WAYLAND_DISPLAY") != NULL) {
+            wm_api = &gfx_sdl;
+        } else {
+            wm_api = &gfx_glx;
+        }
     #else
         wm_api = &gfx_sdl;
     #endif

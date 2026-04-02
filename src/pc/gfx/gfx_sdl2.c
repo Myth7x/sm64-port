@@ -1,6 +1,6 @@
 #include "../compat.h"
 
-#if !defined(__linux__) && !defined(__BSD__) && defined(ENABLE_OPENGL)
+#if defined(ENABLE_OPENGL)
 
 #ifdef __MINGW32__
 #define FOR_WINDOWS 1
@@ -13,6 +13,11 @@
 #include "SDL.h"
 #define GL_GLEXT_PROTOTYPES 1
 #include "SDL_opengl.h"
+#elif defined(__linux__) || defined(__BSD__)
+#include <SDL2/SDL.h>
+#define GL_GLEXT_PROTOTYPES 1
+#include <GL/gl.h>
+#include <GL/glext.h>
 #else
 #include <SDL2/SDL.h>
 #define GL_GLEXT_PROTOTYPES 1
