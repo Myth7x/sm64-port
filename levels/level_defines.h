@@ -58,4 +58,4 @@ STUB_LEVEL(  "",               LEVEL_UNKNOWN_38,       COURSE_NONE,             
 DEFINE_LEVEL("BHOP_FUCKAPOY2", LEVEL_BHOP_FUCKAPOY2,   COURSE_NONE, bhop_fuckapoy2, outside, 20000,    0x00, 0x00, 0x00, _,         _)
 DEFINE_LEVEL("BHOP_ARCANE",     LEVEL_BHOP_ARCANE,      COURSE_NONE, bhop_arcane,    outside, 20000,    0x00, 0x00, 0x00, _,         _)
 DEFINE_LEVEL("BHOP_BOB_V1",     LEVEL_BHOP_BOB_V1,      COURSE_NONE, bhop_bob_v1,    outside, 20000,    0x00, 0x00, 0x00, _,         _)
-DEFINE_LEVEL("SURF_MESA",     LEVEL_SURF_MESA,      COURSE_NONE, surf_mesa,    outside, 20000,    0x00, 0x00, 0x00, _,         _)
+DEFINE_LEVEL("SURF_MENTOS",     LEVEL_SURF_MENTOS,      COURSE_NONE, surf_mentos,    outside, 20000,    0x00, 0x00, 0x00, _,         _)
