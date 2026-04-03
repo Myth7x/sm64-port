@@ -20,6 +20,9 @@ void mouse_register_capture_callbacks(bool (*do_capture)(void), void (*do_releas
 }
 
 void mouse_accum(int dx, int dy) {
+    if (!is_mouse_captured()) {
+        return;
+    }
     gMouseDeltaX += dx;
     gMouseDeltaY += dy;
 }

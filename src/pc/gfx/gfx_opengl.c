@@ -504,6 +504,10 @@ static void gfx_opengl_end_frame(void) {
 static void gfx_opengl_finish_render(void) {
 }
 
+static uintptr_t gfx_opengl_get_imgui_tex_id(uint32_t texture_id) {
+    return (uintptr_t)texture_id;
+}
+
 struct GfxRenderingAPI gfx_opengl_api = {
     gfx_opengl_z_is_from_0_to_1,
     gfx_opengl_unload_shader,
@@ -526,7 +530,8 @@ struct GfxRenderingAPI gfx_opengl_api = {
     gfx_opengl_on_resize,
     gfx_opengl_start_frame,
     gfx_opengl_end_frame,
-    gfx_opengl_finish_render
+    gfx_opengl_finish_render,
+    gfx_opengl_get_imgui_tex_id
 };
 
 #endif

@@ -558,9 +558,6 @@ void load_environmental_regions(s16 **data) {
     }
 }
 
-/**
- * Allocate some of the main pool for surfaces (2300 surf) and for surface nodes (7000 nodes).
- */
 void alloc_surface_pools(void) {
 #ifdef USE_SYSTEM_MALLOC
     sStaticSurfaceNodePool = alloc_only_pool_init();
@@ -568,8 +565,8 @@ void alloc_surface_pools(void) {
     sDynamicSurfaceNodePool = alloc_only_pool_init();
     sDynamicSurfacePool = alloc_only_pool_init();
 #else
-    sSurfacePoolSize = 2300;
-    sSurfaceNodePool = main_pool_alloc(7000 * sizeof(struct SurfaceNode), MEMORY_POOL_LEFT);
+    sSurfacePoolSize = 8192;
+    sSurfaceNodePool = main_pool_alloc(32768 * sizeof(struct SurfaceNode), MEMORY_POOL_LEFT);
     sSurfacePool = main_pool_alloc(sSurfacePoolSize * sizeof(struct Surface), MEMORY_POOL_LEFT);
 #endif
 

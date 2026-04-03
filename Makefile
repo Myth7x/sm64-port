@@ -300,7 +300,7 @@ ifeq ($(TARGET_N64),1)
 else
   SRC_DIRS += src/pc src/pc/gfx src/pc/audio src/pc/controller
   ifneq ($(filter 1,$(TARGET_WINDOWS) $(TARGET_LINUX)),)
-    SRC_DIRS += imgui_menu
+    SRC_DIRS += imgui_menu sm64_queue
   endif
 endif
 BIN_DIRS := bin bin/$(VERSION)
@@ -528,6 +528,10 @@ endif
 
 ASFLAGS := -I include -I $(BUILD_DIR) $(foreach d,$(DEFINES),--defsym $(d))
 
+ifneq ($(filter 1,$(TARGET_WINDOWS) $(TARGET_LINUX)),)
+  PLATFORM_LDFLAGS += -lrabbitmq
+endif
+
 LDFLAGS := $(PLATFORM_LDFLAGS) $(GFX_LDFLAGS)
 
 IMGUI_BUILD_DIR := $(BUILD_DIR)/imgui_lib
@@ -677,6 +681,7 @@ else
     TEXT_DIRS := text/$(VERSION)
     # non-EU encoded text inserted into segment 0x02
     $(BUILD_DIR)/bin/segment2.o: $(BUILD_DIR)/text/$(VERSION)/define_text.inc.c
+    $(BUILD_DIR)/levels/ending/leveldata.o: $(BUILD_DIR)/levels/ending/cake.inc.c
   endif
 endif
 

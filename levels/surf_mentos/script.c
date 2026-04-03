@@ -26,7 +26,7 @@ const LevelScript level_surf_mentos_entry[] = {
 	/* Fast64 begin persistent block [level commands] */
 	/* Fast64 end persistent block [level commands] */
 
-	AREA(1, surf_mentos_area_1),    MARIO_POS(0x01, 0, 1280, -224, -853),
+	AREA(1, surf_mentos_area_1),    MARIO_POS(0x01, 0, 9600, -1680, 6400),
 		TERRAIN(surf_mentos_area_1_collision),
 		MACRO_OBJECTS(surf_mentos_area_1_macro_objs),
 		SET_BACKGROUND_MUSIC(0x00, SEQ_LEVEL_GRASS),
@@ -34,7 +34,7 @@ const LevelScript level_surf_mentos_entry[] = {
 		/* Fast64 begin persistent block [area commands] */
 		/* Fast64 end persistent block [area commands] */
 	END_AREA(),
-	FREE_LEVEL_POOL(),    MARIO_POS(0x01, 0, 1280, -224, -853),
+	FREE_LEVEL_POOL(),    MARIO_POS(0x01, 0, 9600, -1680, 6400),
 	CALL(0, lvl_init_or_update),
 	CALL_LOOP(1, lvl_init_or_update),
 	CLEAR_LEVEL(),

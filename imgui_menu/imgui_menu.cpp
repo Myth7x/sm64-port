@@ -3,6 +3,7 @@
 #include <cmath>
 #include "imgui.h"
 #include "imgui_menu.h"
+#include "imgui_navbar.h"
 #include "level_select_menu.h"
 
 #ifndef _LANGUAGE_C
@@ -37,9 +38,11 @@ void imgui_menu_init(void) {
     ImGuiStyle &style    = ImGui::GetStyle();
     style.WindowRounding  = 4.0f;
     style.WindowBorderSize = 0.0f;
+    imgui_navbar_init();
 }
 
 void imgui_menu_shutdown(void) {
+    imgui_navbar_shutdown();
     ImGui::DestroyContext();
 }
 
@@ -50,6 +53,7 @@ void imgui_menu_new_frame(void) {
 static void draw_info_box(void) {
     if (!gFPSMode) return;
     if (gMarioState == nullptr) return;
+    if (!imgui_navbar_get_info_visible()) return;
 
     unsigned long long now  = pc_perf_counter();
     unsigned long long freq = pc_perf_freq();
@@ -88,24 +92,21 @@ static void draw_info_box(void) {
     ImGui::Text("NOD  S:%-5d D:%d", gNumStaticSurfaceNodes, dyn_nodes);
     ImGui::Text("POOL %d",           gSurfacesAllocated);
     ImGui::Text("VTX  %d",           gNumStaticSurfaces * 3);
-    ImGui::Spacing();
-    if (ImGui::Button("Open Level Select")) {
-        level_select_menu_open();
-    }
     ImGui::End();
 }
 
 static void draw_loading_modal(void) {
     bool level_active = (gLevelLoadingActive != 0);
-    if (level_active || gParallelLoadActive.load()) s_loadFramesLeft = 90;
+    bool parallel_active = gParallelLoadActive.load();
+    if (level_active || parallel_active) s_loadFramesLeft = 90;
     if (s_loadFramesLeft <= 0) return;
     s_loadFramesLeft--;
 
     ImGuiIO &io = ImGui::GetIO();
-    ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f),
+    ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.7f),
                             ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-    ImGui::SetNextWindowSize(ImVec2(360.0f, 0.0f), ImGuiCond_Always);
-    ImGui::SetNextWindowBgAlpha(0.92f);
+    ImGui::SetNextWindowSize(ImVec2(420.0f, 0.0f), ImGuiCond_Always);
+    ImGui::SetNextWindowBgAlpha(0.95f);
 
     ImGuiWindowFlags flags =
         ImGuiWindowFlags_NoDecoration       |
@@ -116,21 +117,37 @@ static void draw_loading_modal(void) {
         ImGuiWindowFlags_NoResize;
 
     ImGui::Begin("##loading", nullptr, flags);
-    ImGui::TextUnformatted(level_active ? "Loading level..." : "Level loaded");
-    ImGui::TextDisabled("%s", level_get_string());
-    ImGui::Spacing();
+    
+    ImGui::SetWindowFontScale(1.2f);
+    if (level_active) {
+        ImGui::TextUnformatted("Loading Level...");
+    } else if (parallel_active) {
+        ImGui::TextUnformatted("Processing Geometry...");
+    } else {
+        ImGui::TextUnformatted("Level Ready!");
+    }
+    ImGui::SetWindowFontScale(1.0f);
+    
+    ImGui::NewLine();
+    ImGui::TextDisabled("Map: %s", level_get_string());
+    
     int   total = gParallelLoadTotal.load();
     int   done  = gParallelLoadDone.load();
-    float frac  = level_active ? ((total > 0) ? (float)done / (float)total : 0.0f)
-                               : 1.0f;
+    float frac  = (total > 0) ? (float)done / (float)total : (level_active || parallel_active ? 0.0f : 1.0f);
+    
+    ImGui::TextDisabled("Progress:");
     ImGui::ProgressBar(frac, ImVec2(-1.0f, 0.0f));
-    ImGui::Spacing();
-    if (total > 0)
-        ImGui::Text("Triangles: %d / %d", done, total);
+    
+    if (total > 0) {
+        float percent = (total > 0) ? (100.0f * done / total) : 0.0f;
+        ImGui::TextDisabled("Geometry: %d / %d (%.0f%%)", done, total, percent);
+    }
+    
     ImGui::End();
 }
 
 void imgui_menu_compose_frame(void) {
+    imgui_navbar_compose_frame();
     draw_info_box();
     draw_loading_modal();
     level_select_menu_compose_frame();
@@ -140,6 +157,14 @@ void imgui_menu_render(void) {
     ImGui::Render();
 }
 
+bool imgui_menu_wants_mouse_capture(void) {
+    ImGuiIO &io = ImGui::GetIO();
+    return io.WantCaptureMouse ||
+           ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow) ||
+           ImGui::IsAnyItemHovered() ||
+           ImGui::IsAnyItemActive();
+}
+
 #else
 
 void imgui_menu_init(void) {}
@@ -147,5 +172,6 @@ void imgui_menu_shutdown(void) {}
 void imgui_menu_new_frame(void) {}
 void imgui_menu_compose_frame(void) {}
 void imgui_menu_render(void) {}
+bool imgui_menu_wants_mouse_capture(void) { return false; }
 
 #endif

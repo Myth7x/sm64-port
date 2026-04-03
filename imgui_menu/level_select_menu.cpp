@@ -1,6 +1,8 @@
 #if defined(ENABLE_DX11) || defined(ENABLE_DX12) || defined(TARGET_LINUX)
 
+#include <cstdio>
 #include <cmath>
+#include <cfloat>
 #include "imgui.h"
 #include "level_select_menu.h"
 
@@ -23,6 +25,22 @@ extern "C" {
 #include "pc/load_progress.h"
 
 static bool s_levelSelectOpen = false;
+static int s_selectedLevelIdx = -1;
+
+struct LevelSelectEntry {
+    s16 levelNum;
+    const char *name;
+};
+
+#define STUB_LEVEL(_name, _enum, _course, _acoustic, _echo1, _echo2, _echo3, _music, _camera)
+#define DEFINE_LEVEL(name, levelEnum, _course, _folder, _texture, _acoustic, _echo1, _echo2, _echo3, _music, _camera) { levelEnum, name },
+static const LevelSelectEntry sLevelEntries[] = {
+    #include "levels/level_defines.h"
+};
+#undef STUB_LEVEL
+#undef DEFINE_LEVEL
+
+static const int sLevelEntryCount = (int)(sizeof(sLevelEntries) / sizeof(sLevelEntries[0]));
 
 void level_select_menu_init(void) {
 }
@@ -34,6 +52,15 @@ void level_select_menu_new_frame(void) {
 }
 
 void level_select_menu_open(void) {
+    for (int i = 0; i < sLevelEntryCount; i++) {
+        if (sLevelEntries[i].levelNum == gCurrLevelNum) {
+            s_selectedLevelIdx = i;
+            break;
+        }
+    }
+    if (s_selectedLevelIdx < 0 && sLevelEntryCount > 0) {
+        s_selectedLevelIdx = 0;
+    }
     s_levelSelectOpen = true;
 }
 
@@ -62,6 +89,40 @@ static void draw_level_select_menu_modal(void) {
     ImGui::Begin("##levelselectmenu", &keepOpen, flags);
     ImGui::TextUnformatted("Level Select Menu");
     ImGui::TextDisabled("%s", level_get_string());
+    ImGui::Spacing();
+
+    if (ImGui::BeginListBox("Maps", ImVec2(-FLT_MIN, 220.0f))) {
+        for (int i = 0; i < sLevelEntryCount; i++) {
+            bool selected = (s_selectedLevelIdx == i);
+            if (ImGui::Selectable(sLevelEntries[i].name, selected)) {
+                s_selectedLevelIdx = i;
+            }
+            if (selected) {
+                ImGui::SetItemDefaultFocus();
+            }
+        }
+        ImGui::EndListBox();
+    }
+
+    if (s_selectedLevelIdx >= 0 && s_selectedLevelIdx < sLevelEntryCount) {
+        const LevelSelectEntry &entry = sLevelEntries[s_selectedLevelIdx];
+        if (entry.levelNum != gCurrLevelNum) {
+            if (ImGui::Button("Load Selected Map", ImVec2(-FLT_MIN, 0.0f))) {
+                std::fprintf(stderr,
+                             "[level-select] load requested current=%d selected=%d name=%s\n",
+                             (int)gCurrLevelNum,
+                             (int)entry.levelNum,
+                             entry.name);
+                level_load(entry.levelNum);
+                keepOpen = false;
+            }
+        } else {
+            ImGui::BeginDisabled();
+            ImGui::Button("Already In This Map", ImVec2(-FLT_MIN, 0.0f));
+            ImGui::EndDisabled();
+        }
+    }
+
     ImGui::Spacing();
     if (ImGui::Button("Close")) {
         keepOpen = false;

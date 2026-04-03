@@ -12,7 +12,7 @@
 #ifdef USE_SYSTEM_MALLOC
 #define GFX_POOL_SIZE 1
 #else
-#define GFX_POOL_SIZE 6400 // Size of how large the master display list (gDisplayListHead) can be
+#define GFX_POOL_SIZE 32768
 #endif
 
 struct GfxPool {
@@ -76,6 +76,7 @@ extern volatile int gLevelLoadingActive;
 
 void setup_game_memory(void);
 void thread5_game_loop(UNUSED void *arg);
+void game_request_hard_reinit(s16 levelNum);
 void clear_frame_buffer(s32 color);
 void clear_viewport(Vp *viewport, s32 color);
 void make_viewport_clip_rect(Vp *viewport);

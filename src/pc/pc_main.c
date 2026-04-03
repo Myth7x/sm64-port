@@ -51,6 +51,8 @@ static void crash_handler(int sig) {
 
 #include "compat.h"
 
+#include "../../sm64_queue/sm64_queue.h"
+
 #define CONFIG_FILE "sm64config.txt"
 
 OSMesg gMainReceivedMesg;
@@ -100,6 +102,7 @@ void exec_display_list(struct SPTask *spTask) {
 void produce_one_frame(void) {
     gfx_start_frame();
     game_loop_one_iteration();
+    sm64_queue_send_mario_state();
     
     int samples_left = audio_api->buffered();
     u32 num_audio_samples = samples_left < audio_api->get_desired_buffered() ? SAMPLES_HIGH : SAMPLES_LOW;
@@ -184,6 +187,7 @@ void main_func(void) {
 
     configfile_load(CONFIG_FILE);
     atexit(save_config);
+    atexit(sm64_queue_shutdown);
 
 #ifdef TARGET_WEB
     emscripten_set_main_loop(em_main_loop, 0, 0);
@@ -240,6 +244,7 @@ void main_func(void) {
     audio_init();
     sound_init();
 
+    sm64_queue_init();
     thread5_game_loop(NULL);
 #ifdef TARGET_WEB
     /*for (int i = 0; i < atoi(argv[1]); i++) {

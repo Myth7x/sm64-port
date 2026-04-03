@@ -20,7 +20,7 @@
 const LevelScript level_de_dust2_entry[] = {
 	INIT_LEVEL(),
 	LOAD_MIO0(0x07, _de_dust2_segment_7SegmentRomStart, _de_dust2_segment_7SegmentRomEnd), 
-	LOAD_MIO0(0x0A, _water_skybox_mio0SegmentRomStart, _water_skybox_mio0SegmentRomEnd), 
+	LOAD_MIO0(0x0A, _clouds_skybox_mio0SegmentRomStart, _clouds_skybox_mio0SegmentRomEnd), 
 	ALLOC_LEVEL_POOL(),
 	MARIO(MODEL_MARIO, 0x00000001, bhvMario), 
 	/* Fast64 begin persistent block [level commands] */

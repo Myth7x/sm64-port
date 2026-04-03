@@ -29,7 +29,7 @@
 
 static s8 sBbhStairJiggleOffsets[] = { -8, 8, -4, 4 };
 static s16 sPowersOfTwo[] = { 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80 };
-static s8 sLevelsWithRooms[] = { LEVEL_DE_DUST2, LEVEL_SURF_MENTOS, LEVEL_BHOP_FUCKAPOY2, LEVEL_BHOP_ARCANE, -1 };
+static s8 sLevelsWithRooms[] = { -1 };
 
 static s32 clear_move_flag(u32 *, s32);
 

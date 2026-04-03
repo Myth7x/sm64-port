@@ -303,7 +303,9 @@ static void gfx_sdl_handle_events(void) {
                 break;
             case SDL_MOUSEBUTTONDOWN:
                 /* Re-acquire mouse capture when the user clicks into the window. */
-                capture_mouse();
+                if (!imgui_sdl2_wants_mouse_capture()) {
+                    capture_mouse();
+                }
                 break;
 #endif
             case SDL_WINDOWEVENT:

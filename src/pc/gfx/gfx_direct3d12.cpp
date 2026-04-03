@@ -971,6 +971,10 @@ static void gfx_direct3d12_finish_render(void) {
 
 } // namespace
 
+static uintptr_t gfx_direct3d12_get_imgui_tex_id(uint32_t texture_id) {
+    return 0;
+}
+
 struct GfxRenderingAPI gfx_direct3d12_api = {
     gfx_direct3d12_z_is_from_0_to_1,
     gfx_direct3d12_unload_shader,
@@ -993,7 +997,8 @@ struct GfxRenderingAPI gfx_direct3d12_api = {
     gfx_direct3d12_on_resize,
     gfx_direct3d12_start_frame,
     gfx_direct3d12_end_frame,
-    gfx_direct3d12_finish_render
+    gfx_direct3d12_finish_render,
+    gfx_direct3d12_get_imgui_tex_id
 };
 
 #endif

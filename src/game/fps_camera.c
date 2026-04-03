@@ -15,6 +15,7 @@
 #include "../engine/surface_load.h"
 
 #include "../pc/mouse.h"
+#include "imgui_menu/imgui_menu.h"
 
 #ifndef TARGET_N64
 static unsigned long long s_lastPerfCount;
@@ -48,6 +49,9 @@ void fps_toggle_mode(void) {
 
 void fps_toggle_noclip(void) {
     gNoclipMode = !gNoclipMode;
+    if (gNoclipMode) {
+        level_cancel_delayed_warp();
+    }
 }
 
 void fps_teleport_to_map_center(void) {
@@ -105,14 +109,19 @@ void fps_camera_process_mouse(struct Camera *c) {
         return;
     }
 #ifndef TARGET_N64
+    if (imgui_menu_wants_mouse_capture()) {
+        gMouseDeltaX = 0;
+        gMouseDeltaY = 0;
+        return;
+    }
+#endif
+    
     if (!is_mouse_captured())
     {
         
-        capture_mouse();
-        
+        //capture_mouse();
+        return;    
     }
-#endif
-
     int dx = gMouseDeltaX;
     int dy = gMouseDeltaY;
     gMouseDeltaX = 0;

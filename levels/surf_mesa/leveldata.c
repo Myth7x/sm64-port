@@ -10,7 +10,7 @@
 
 #include "make_const_nonconst.h"
 
-#include "levels/Surf_Mesa/texture.inc.c"
-#include "levels/Surf_Mesa/areas/1/1/model.inc.c"
-#include "levels/Surf_Mesa/areas/1/collision.inc.c"
-#include "levels/Surf_Mesa/areas/1/macro.inc.c"
+#include "levels/surf_mesa/texture.inc.c"
+#include "levels/surf_mesa/areas/1/1/model.inc.c"
+#include "levels/surf_mesa/areas/1/collision.inc.c"
+#include "levels/surf_mesa/areas/1/macro.inc.c"

@@ -1,4 +1,4 @@
-const MacroObject Surf_Mesa_area_1_macro_objs[] = {
+const MacroObject surf_mesa_area_1_macro_objs[] = {
 	MACRO_OBJECT_END(),
 };
 

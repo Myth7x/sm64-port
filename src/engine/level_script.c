@@ -323,19 +323,23 @@ static void level_cmd_load_mio0_texture(void) {
 }
 
 static void level_cmd_init_level(void) {
+    fprintf(stderr, "[level-script] INIT_LEVEL starting - clearing areas and objects\n");
     init_graph_node_start(NULL, (struct GraphNodeStart *) &gObjParentGraphNode);
     clear_objects();
     clear_areas();
     main_pool_push_state();
+    fprintf(stderr, "[level-script] INIT_LEVEL complete - graph, objects, areas cleared\n");
 
     sCurrentCmd = CMD_NEXT;
 }
 
 static void level_cmd_clear_level(void) {
+    fprintf(stderr, "[level-script] CLEAR_LEVEL starting - cleaning up current level\n");
     clear_objects();
     clear_area_graph_nodes();
     clear_areas();
     main_pool_pop_state();
+    fprintf(stderr, "[level-script] CLEAR_LEVEL complete - level cleaned up\n");
 
     sCurrentCmd = CMD_NEXT;
 }
@@ -771,6 +775,7 @@ static void level_cmd_get_or_set_var(void) {
                 break;
             case 3:
                 sRegister = gCurrLevelNum;
+                fprintf(stderr, "[dispatcher] sync sRegister = gCurrLevelNum = %d\n", (int)sRegister);
                 break;
             case 4:
                 sRegister = gCurrAreaIndex;
@@ -846,6 +851,7 @@ static void (*LevelScriptJumpTable[])(void) = {
 };
 
 struct LevelCommand *level_script_execute(struct LevelCommand *cmd) {
+    fprintf(stderr, "[level-script] execute starting level %d\n", (int)gCurrLevelNum);
     sScriptStatus = SCRIPT_RUNNING;
     sCurrentCmd = cmd;
 
@@ -853,6 +859,7 @@ struct LevelCommand *level_script_execute(struct LevelCommand *cmd) {
         LevelScriptJumpTable[sCurrentCmd->type]();
     }
 
+    fprintf(stderr, "[level-script] execute complete level %d - rendering\n", (int)gCurrLevelNum);
     profiler_log_thread5_time(LEVEL_SCRIPT_EXECUTE);
     init_rcp();
     render_game();

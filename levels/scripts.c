@@ -38,7 +38,7 @@
 
 #define STUB_LEVEL(_0, _1, _2, _3, _4, _5, _6, _7, _8)
 #define DEFINE_LEVEL(_0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10) + 3
-static const LevelScript script_exec_level_table[2
+static const LevelScript script_exec_level_table[1
   #include "level_defines.h"
 ];
 #undef DEFINE_LEVEL
@@ -116,11 +116,13 @@ const LevelScript level_main_scripts_entry[] = {
     /* ------ FPS quick-start: skip intro, title screen, and file select ------ *
      * 1. SET_REG(1) + GET_OR_SET force gCurrSaveFileNum=1 before              *
      *    lvl_init_from_save_file runs, so Mario is initialised from slot 1.   *
-     * 2. lvl_quickstart marks file 1 as existing (→ ACT_IDLE, not cutscene), *
-     *    enables gFPSMode, and returns LEVEL_CASTLE_GROUNDS to seed the loop. *
-     * 3. The loop executes whatever level sRegister holds; when the player    *
-     *    warps, the C warp system sets sRegister = destination level num so   *
-     *    the next iteration runs the new level automatically.                 */
+     * 2. lvl_quickstart marks file 1 as existing (ACT_IDLE, not cutscene),    *
+     *    enables gFPSMode, and seeds sRegister with initial level.            *
+     * 3. JUMP_LINK dispatches to script_exec_level_table which routes based on *
+     *    sRegister. The matching level script executes and returns the next    *
+     *    level number via sRegister (from update_level during gameplay).       *
+     * 4. When a warp occurs, play_mode_change_level returns the destination   *
+     *    level, which becomes sRegister for the next JUMP_LINK dispatch.      */
     SET_REG(/*value*/ 1),
     GET_OR_SET(/*op*/ OP_SET, /*var*/ VAR_CURR_SAVE_FILE_NUM),
     CALL(/*arg*/ 0, /*func*/ lvl_quickstart),        // mark file existing FIRST
@@ -163,7 +165,6 @@ static const LevelScript script_L5[] = {
 #define DEFINE_LEVEL(_0, levelenum, _2, folder, _4, _5, _6, _7, _8, _9, _10) JUMP_IF(OP_EQ, levelenum, script_exec_ ## folder),
 
 static const LevelScript script_exec_level_table[] = {
-    GET_OR_SET(/*op*/ OP_GET, /*var*/ VAR_CURR_LEVEL_NUM),
     #include "levels/level_defines.h"
     EXIT(),
 };

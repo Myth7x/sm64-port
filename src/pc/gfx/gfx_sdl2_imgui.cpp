@@ -19,6 +19,14 @@ void imgui_sdl2_process_event(void *sdl_event) {
     ImGui_ImplSDL2_ProcessEvent(static_cast<SDL_Event *>(sdl_event));
 }
 
+bool imgui_sdl2_wants_mouse_capture(void) {
+    ImGuiIO &io = ImGui::GetIO();
+    return io.WantCaptureMouse ||
+           ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow) ||
+           ImGui::IsAnyItemHovered() ||
+           ImGui::IsAnyItemActive();
+}
+
 void imgui_sdl2_render_frame(void) {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame();
@@ -38,6 +46,7 @@ void imgui_sdl2_shutdown(void) {
 
 void imgui_sdl2_init(void *) {}
 void imgui_sdl2_process_event(void *) {}
+bool imgui_sdl2_wants_mouse_capture(void) { return false; }
 void imgui_sdl2_render_frame(void) {}
 void imgui_sdl2_shutdown(void) {}
 

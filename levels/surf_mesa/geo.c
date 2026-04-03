@@ -11,6 +11,6 @@
 
 #include "make_const_nonconst.h"
 
-#include "levels/Surf_Mesa/header.h"
+#include "levels/surf_mesa/header.h"
 
-#include "levels/Surf_Mesa/areas/1/geo.inc.c"
+#include "levels/surf_mesa/areas/1/geo.inc.c"

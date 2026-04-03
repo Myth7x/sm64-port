@@ -10,4 +10,7 @@
 
 #include "make_const_nonconst.h"
 
-#include "levels/bhop_fuckapoy2/leveldata.inc.c"
+#include "levels/bhop_fuckapoy2/texture.inc.c"
+#include "levels/bhop_fuckapoy2/areas/1/1/model.inc.c"
+#include "levels/bhop_fuckapoy2/areas/1/collision.inc.c"
+#include "levels/bhop_fuckapoy2/areas/1/macro.inc.c"

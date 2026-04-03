@@ -29,6 +29,7 @@
 #include "course_table.h"
 #include "rumble_init.h"
 #include "fps_mode.h"
+#include "platform_displacement.h"
 #include <stdio.h>
 
 #define PLAY_MODE_NORMAL 0
@@ -164,6 +165,8 @@ struct CreditsEntry sCreditsSequence[] = {
     { LEVEL_BHOP_ARCANE, 1, 1, -128, { 0, 0, 0 }, NULL },
     { LEVEL_SURF_MENTOS, 1, 1, -128, { 0, 0, 0 }, NULL },
     { LEVEL_DE_DUST2, 1, 1, -128, { 0, 0, 0 }, NULL },
+    { LEVEL_SURF_MESA, 1, 1, -128, { 0, 0, 0 }, NULL },
+    { LEVEL_DE_SEASON, 1, 1, -128, { 0, 0, 0 }, NULL },
     { LEVEL_NONE, 0, 1, 0, { 0, 0, 0 }, NULL },
 };
 
@@ -487,6 +490,13 @@ void warp_area(void) {
 
 // used for warps between levels
 void warp_level(void) {
+    fprintf(stderr,
+            "[warp] warp_level apply oldLevel=%d newLevel=%d area=%d node=0x%02X\n",
+            (int)gCurrLevelNum,
+            (int)sWarpDest.levelNum,
+            (int)sWarpDest.areaIdx,
+            (unsigned int)((u8)sWarpDest.nodeId));
+
     gCurrLevelNum = sWarpDest.levelNum;
 
     level_control_timer(TIMER_CONTROL_HIDE);
@@ -640,6 +650,16 @@ void initiate_warp(s16 destLevel, s16 destArea, s16 destWarpNode, s32 arg3) {
     sWarpDest.areaIdx = destArea;
     sWarpDest.nodeId = destWarpNode;
     sWarpDest.arg = arg3;
+
+    fprintf(stderr,
+            "[warp] initiate currentLevel=%d currentArea=%d destLevel=%d destArea=%d destNode=0x%02X type=%d arg=%d\n",
+            (int)gCurrLevelNum,
+            (int)(gCurrentArea != NULL ? gCurrentArea->index : -1),
+            (int)destLevel,
+            (int)destArea,
+            (unsigned int)((u8)destWarpNode),
+            (int)sWarpDest.type,
+            (int)arg3);
 }
 
 // From Surface 0xD3 to 0xFC
@@ -711,6 +731,20 @@ void initiate_painting_warp(void) {
  */
 s16 level_trigger_warp(struct MarioState *m, s32 warpOp) {
     s32 val04 = TRUE;
+
+    if (gFPSMode && (warpOp == WARP_OP_DEATH || warpOp == WARP_OP_WARP_FLOOR)) {
+        return 0;
+    }
+
+    if (gNoclipMode && (warpOp == WARP_OP_WARP_DOOR
+                        || warpOp == WARP_OP_WARP_OBJECT
+                        || warpOp == WARP_OP_TELEPORT
+                        || warpOp == WARP_OP_UNKNOWN_01
+                        || warpOp == WARP_OP_UNKNOWN_02
+                        || warpOp == WARP_OP_DEATH
+                        || warpOp == WARP_OP_WARP_FLOOR)) {
+        return 0;
+    }
 
     if (sDelayedWarpOp == WARP_OP_NONE) {
         m->invincTimer = -1;
@@ -824,6 +858,13 @@ s16 level_trigger_warp(struct MarioState *m, s32 warpOp) {
     }
 
     return sDelayedWarpTimer;
+}
+
+void level_cancel_delayed_warp(void) {
+    sDelayedWarpOp = WARP_OP_NONE;
+    sDelayedWarpTimer = 0;
+    sSourceWarpNodeId = 0;
+    sDelayedWarpArg = 0;
 }
 
 /**
@@ -1005,6 +1046,11 @@ s32 play_mode_normal(void) {
     // warp, change play mode accordingly.
     if (sCurrPlayMode == PLAY_MODE_NORMAL) {
         if (sWarpDest.type == WARP_TYPE_CHANGE_LEVEL) {
+            fprintf(stderr,
+                    "[warp] play_mode_normal queued level change destLevel=%d area=%d node=0x%02X\n",
+                    (int)sWarpDest.levelNum,
+                    (int)sWarpDest.areaIdx,
+                    (unsigned int)((u8)sWarpDest.nodeId));
             set_play_mode(PLAY_MODE_CHANGE_LEVEL);
         } else if (sTransitionTimer != 0) {
             set_play_mode(PLAY_MODE_CHANGE_AREA);
@@ -1110,6 +1156,11 @@ s32 play_mode_change_level(void) {
         sTransitionUpdate = NULL;
 
         if (sWarpDest.type != WARP_TYPE_NOT_WARPING) {
+            fprintf(stderr,
+                    "[warp] change-level transition complete nextLevel=%d area=%d node=0x%02X\n",
+                    (int)sWarpDest.levelNum,
+                    (int)sWarpDest.areaIdx,
+                    (unsigned int)((u8)sWarpDest.nodeId));
             return sWarpDest.levelNum;
         } else {
             return D_80339EE0;
@@ -1168,6 +1219,7 @@ s32 update_level(void) {
 s32 init_level(void) {
     s32 val4 = 0;
 
+    fprintf(stderr, "[level-init] init_level() called - initializing level %d\n", (int)gCurrLevelNum);
     gFPSMode = TRUE; // always keep FPS mode active on every level load
 
     set_play_mode(PLAY_MODE_NORMAL);
@@ -1250,6 +1302,8 @@ s32 lvl_init_or_update(s16 initOrUpdate, UNUSED s32 unused) {
     return result;
 }
 
+s16 sLevelToLoad = LEVEL_DE_DUST2;
+
 /**
  * Quickstart: skips the title screen, intro, and file-select.
  *
@@ -1260,11 +1314,15 @@ s32 lvl_init_or_update(s16 initOrUpdate, UNUSED s32 unused) {
  * and enables FPS mode immediately.
  */
 s32 lvl_quickstart(UNUSED s16 arg, UNUSED s32 levelNum) {
+    if (sLevelToLoad <= LEVEL_NONE || sLevelToLoad >= LEVEL_COUNT) {
+        sLevelToLoad = LEVEL_DE_DUST2;
+    }
+
     gCurrSaveFileNum = 1;
-    gCurrLevelNum    = LEVEL_DE_DUST2;
+    gCurrLevelNum    = sLevelToLoad;
     save_file_set_flags(SAVE_FLAG_FILE_EXISTS);
     gFPSMode = TRUE;
-    return LEVEL_DE_DUST2;
+    return sLevelToLoad;
 }
 
 s32 lvl_init_from_save_file(UNUSED s16 arg0, s32 levelNum) {
@@ -1345,4 +1403,42 @@ s32 lvl_set_current_level(UNUSED s16 arg0, s32 levelNum) {
 s32 lvl_play_the_end_screen_sound(UNUSED s16 arg0, UNUSED s32 arg1) {
     play_sound(SOUND_MENU_THANK_YOU_PLAYING_MY_GAME, gGlobalSoundSource);
     return 1;
+}
+
+static void game_teardown_level_state(void) {
+    sDelayedWarpOp = WARP_OP_NONE;
+    sTransitionTimer = 0;
+    D_80339EE0 = 0;
+    fprintf(stderr, "[teardown] reset transition state\n");
+}
+
+void game_teardown_level(void) {
+    fprintf(stderr, "[teardown] begin safe level transition\n");
+    game_teardown_level_state();
+    fprintf(stderr, "[teardown] engine will clear/load via level script\n");
+}
+
+s32 game_prepare_level_load(s16 levelNum) {
+    if (levelNum == LEVEL_NONE || levelNum >= LEVEL_COUNT) {
+        fprintf(stderr, "[load-prep] invalid level %d\n", (int)levelNum);
+        return 0;
+    }
+
+    fprintf(stderr, "[load-prep] preparing to load level %d\n", (int)levelNum);
+    sLevelToLoad = levelNum;
+    
+    game_teardown_level();
+    
+    fprintf(stderr, "[load-prep] requesting hard reinit for level %d\n", (int)levelNum);
+    game_request_hard_reinit(levelNum);
+
+    return 1;
+}
+
+s32 level_load(s16 levelNum) {
+    return game_prepare_level_load(levelNum);
+}
+
+s16 level_get_selected(void) {
+    return sLevelToLoad;
 }

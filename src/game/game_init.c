@@ -74,6 +74,7 @@ static pthread_mutex_t sWorkMtx  = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t  sWorkCond = PTHREAD_COND_INITIALIZER;
 static int             sWorkPending = 0;
 static _Atomic int     sWorkDone    = 1;
+static _Atomic s32     sHardReinitLevel = LEVEL_NONE;
 static struct LevelCommand *sLevelScriptArg;
 static struct LevelCommand *sLevelScriptRet;
 
@@ -88,6 +89,13 @@ static void *level_script_worker(void *arg) {
         sLevelScriptRet = level_script_execute(sLevelScriptArg);
         atomic_store_explicit(&sWorkDone, 1, memory_order_release);
     }
+}
+
+void game_request_hard_reinit(s16 levelNum) {
+    if (levelNum <= LEVEL_NONE || levelNum >= LEVEL_COUNT) {
+        return;
+    }
+    atomic_store_explicit(&sHardReinitLevel, levelNum, memory_order_release);
 }
 #endif
 void *gDemoInputsMemAlloc;
@@ -739,6 +747,13 @@ void thread5_game_loop(UNUSED void *arg) {
 }
 
 void game_loop_one_iteration(void) {
+#endif
+#ifndef TARGET_N64
+        s32 requestedLevel = atomic_exchange_explicit(&sHardReinitLevel, LEVEL_NONE, memory_order_acq_rel);
+        if (requestedLevel > LEVEL_NONE && requestedLevel < LEVEL_COUNT) {
+            fprintf(stderr, "[reinit] hard reinit requested for level %d\n", (int)requestedLevel);
+            levelCommandAddr = segmented_to_virtual(level_script_entry);
+        }
 #endif
         // If the reset timer is active, run the process to reset the game.
         if (gResetTimer) {

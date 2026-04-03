@@ -6,6 +6,7 @@ extern "C" {
 
 void imgui_sdl2_init(void *sdl_window);
 void imgui_sdl2_process_event(void *sdl_event);
+bool imgui_sdl2_wants_mouse_capture(void);
 void imgui_sdl2_render_frame(void);
 void imgui_sdl2_shutdown(void);
 

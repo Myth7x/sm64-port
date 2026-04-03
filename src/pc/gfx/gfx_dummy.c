@@ -187,6 +187,7 @@ struct GfxRenderingAPI gfx_dummy_renderer_api = {
     gfx_dummy_renderer_on_resize,
     gfx_dummy_renderer_start_frame,
     gfx_dummy_renderer_end_frame,
-    gfx_dummy_renderer_finish_render
+    gfx_dummy_renderer_finish_render,
+    NULL
 };
 #endif

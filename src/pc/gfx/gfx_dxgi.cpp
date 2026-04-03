@@ -28,6 +28,7 @@
 
 #include "imgui.h"
 #include "imgui_impl_win32.h"
+#include "imgui_menu/imgui_menu.h"
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 #define DECLARE_GFX_DXGI_FUNCTIONS
@@ -312,7 +313,9 @@ static LRESULT CALLBACK gfx_dxgi_wnd_proc(HWND h_wnd, UINT message, WPARAM w_par
         case WM_LBUTTONDOWN:
         case WM_RBUTTONDOWN:
         case WM_MBUTTONDOWN:
-            capture_mouse();
+            if (!imgui_menu_wants_mouse_capture()) {
+                capture_mouse();
+            }
             break;
         case WM_KEYDOWN:
             if (!(l_param & (1 << 30))) {

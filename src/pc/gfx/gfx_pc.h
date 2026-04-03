@@ -1,6 +1,7 @@
 #ifndef GFX_PC_H
 #define GFX_PC_H
 
+#include <stdint.h>
 #include <stdbool.h>
 
 struct GfxRenderingAPI;
@@ -13,6 +14,12 @@ struct GfxDimensions {
 
 extern struct GfxDimensions gfx_current_dimensions;
 
+typedef struct {
+    uint32_t texture_id;
+    int16_t  width;
+    int16_t  height;
+} GfxTextureCacheEntry;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -23,6 +30,10 @@ void gfx_start_frame(void);
 void gfx_run(Gfx *commands);
 void gfx_end_frame(void);
 void gfx_imgui_frame(void);
+
+uint32_t          gfx_texture_cache_count(void);
+GfxTextureCacheEntry gfx_texture_cache_entry(uint32_t idx);
+uintptr_t         gfx_get_imgui_tex_id(uint32_t texture_id);
 
 #ifdef __cplusplus
 }

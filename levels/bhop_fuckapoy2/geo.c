@@ -12,4 +12,5 @@
 #include "make_const_nonconst.h"
 
 #include "levels/bhop_fuckapoy2/header.h"
-#include "levels/bhop_fuckapoy2/geo.inc.c"
+
+#include "levels/bhop_fuckapoy2/areas/1/geo.inc.c"

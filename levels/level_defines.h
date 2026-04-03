@@ -59,3 +59,5 @@ DEFINE_LEVEL("BHOP_FUCKAPOY2", LEVEL_BHOP_FUCKAPOY2,   COURSE_NONE, bhop_fuckapo
 DEFINE_LEVEL("BHOP_ARCANE",     LEVEL_BHOP_ARCANE,      COURSE_NONE, bhop_arcane,    outside, 20000,    0x00, 0x00, 0x00, _,         _)
 DEFINE_LEVEL("SURF_MENTOS",     LEVEL_SURF_MENTOS,      COURSE_NONE, surf_mentos,    outside, 20000,    0x00, 0x00, 0x00, _,         _)
 DEFINE_LEVEL("DE_DUST2",        LEVEL_DE_DUST2,         COURSE_NONE, de_dust2,       outside, 20000,    0x00, 0x00, 0x00, _,         _)
+DEFINE_LEVEL("SURF_MESA",        LEVEL_SURF_MESA,         COURSE_NONE, surf_mesa,       outside, 20000,    0x00, 0x00, 0x00, _,         _)
+DEFINE_LEVEL("DE_SEASON",        LEVEL_DE_SEASON,         COURSE_NONE, de_season,       outside, 20000,    0x00, 0x00, 0x00, _,         _)

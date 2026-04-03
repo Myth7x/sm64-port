@@ -30,6 +30,7 @@ struct GfxRenderingAPI {
     void (*start_frame)(void);
     void (*end_frame)(void);
     void (*finish_render)(void);
+    uintptr_t (*get_imgui_tex_id)(uint32_t texture_id);
 };
 
 #endif

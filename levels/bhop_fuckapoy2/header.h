@@ -2,9 +2,54 @@
 #define BHOP_FUCKAPOY2_HEADER_H
 
 #include "types.h"
-#include "game/moving_texture.h"
 
-#include "levels/bhop_fuckapoy2/header.inc.h"
+extern const GeoLayout bhop_fuckapoy2_area_1_geo[];
+extern const GeoLayout bhop_fuckapoy2_area_1[];
+extern const Collision bhop_fuckapoy2_area_1_collision[];
+extern const MacroObject bhop_fuckapoy2_area_1_macro_objs[];
+extern Lights1 bhop_fuckapoy2_dl_realworldtextures2_metal_cast_iron_06_001_lights;
+extern Lights1 bhop_fuckapoy2_dl_realworldtextures2_metal_metal_69_001_lights;
+extern Lights1 bhop_fuckapoy2_dl_realworldtextures2_ground_lava_magma_05_001_lights;
+extern Lights1 bhop_fuckapoy2_dl_realworldtextures2_rock_rock_26_001_lights;
+extern Lights1 bhop_fuckapoy2_dl_saspatoon_carpet_smooth_smoothcarpetgreen_001_lights;
+extern Lights1 bhop_fuckapoy2_dl_saspatoon_carpet_smooth_smoothcarpetred_001_lights;
+extern Lights1 bhop_fuckapoy2_dl_realworldtextures2_metal_metal_189_001_lights;
+extern u8 bhop_fuckapoy2_dl_cast_iron_06_rgba16[];
+extern u8 bhop_fuckapoy2_dl_metal_69_rgba16[];
+extern u8 bhop_fuckapoy2_dl_lava_magma_05_rgba16[];
+extern u8 bhop_fuckapoy2_dl_rock_26_rgba16[];
+extern u8 bhop_fuckapoy2_dl_smoothcarpetgreen_rgba16[];
+extern u8 bhop_fuckapoy2_dl_smoothcarpetred_rgba16[];
+extern u8 bhop_fuckapoy2_dl_metal_189_rgba16[];
+extern Vtx bhop_fuckapoy2_dl_bhop_fuckapoy2_mesh_layer_1_vtx_0[1354];
+extern Gfx bhop_fuckapoy2_dl_bhop_fuckapoy2_mesh_layer_1_tri_0[];
+extern Vtx bhop_fuckapoy2_dl_bhop_fuckapoy2_mesh_layer_1_vtx_1[1137];
+extern Gfx bhop_fuckapoy2_dl_bhop_fuckapoy2_mesh_layer_1_tri_1[];
+extern Vtx bhop_fuckapoy2_dl_bhop_fuckapoy2_mesh_layer_1_vtx_2[244];
+extern Gfx bhop_fuckapoy2_dl_bhop_fuckapoy2_mesh_layer_1_tri_2[];
+extern Vtx bhop_fuckapoy2_dl_bhop_fuckapoy2_mesh_layer_1_vtx_3[593];
+extern Gfx bhop_fuckapoy2_dl_bhop_fuckapoy2_mesh_layer_1_tri_3[];
+extern Vtx bhop_fuckapoy2_dl_bhop_fuckapoy2_mesh_layer_1_vtx_4[74];
+extern Gfx bhop_fuckapoy2_dl_bhop_fuckapoy2_mesh_layer_1_tri_4[];
+extern Vtx bhop_fuckapoy2_dl_bhop_fuckapoy2_mesh_layer_1_vtx_5[74];
+extern Gfx bhop_fuckapoy2_dl_bhop_fuckapoy2_mesh_layer_1_tri_5[];
+extern Vtx bhop_fuckapoy2_dl_bhop_fuckapoy2_mesh_layer_1_vtx_6[24];
+extern Gfx bhop_fuckapoy2_dl_bhop_fuckapoy2_mesh_layer_1_tri_6[];
+extern Gfx mat_bhop_fuckapoy2_dl_realworldtextures2_metal_cast_iron_06_001[];
+extern Gfx mat_revert_bhop_fuckapoy2_dl_realworldtextures2_metal_cast_iron_06_001[];
+extern Gfx mat_bhop_fuckapoy2_dl_realworldtextures2_metal_metal_69_001[];
+extern Gfx mat_revert_bhop_fuckapoy2_dl_realworldtextures2_metal_metal_69_001[];
+extern Gfx mat_bhop_fuckapoy2_dl_realworldtextures2_ground_lava_magma_05_001[];
+extern Gfx mat_revert_bhop_fuckapoy2_dl_realworldtextures2_ground_lava_magma_05_001[];
+extern Gfx mat_bhop_fuckapoy2_dl_realworldtextures2_rock_rock_26_001[];
+extern Gfx mat_revert_bhop_fuckapoy2_dl_realworldtextures2_rock_rock_26_001[];
+extern Gfx mat_bhop_fuckapoy2_dl_saspatoon_carpet_smooth_smoothcarpetgreen_001[];
+extern Gfx mat_revert_bhop_fuckapoy2_dl_saspatoon_carpet_smooth_smoothcarpetgreen_001[];
+extern Gfx mat_bhop_fuckapoy2_dl_saspatoon_carpet_smooth_smoothcarpetred_001[];
+extern Gfx mat_revert_bhop_fuckapoy2_dl_saspatoon_carpet_smooth_smoothcarpetred_001[];
+extern Gfx mat_bhop_fuckapoy2_dl_realworldtextures2_metal_metal_189_001[];
+extern Gfx mat_revert_bhop_fuckapoy2_dl_realworldtextures2_metal_metal_189_001[];
+extern Gfx bhop_fuckapoy2_dl_bhop_fuckapoy2_mesh_layer_1_with_revert[];
 
 extern const LevelScript level_bhop_fuckapoy2_entry[];
 

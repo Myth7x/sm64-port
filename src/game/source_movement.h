@@ -3,16 +3,21 @@
 
 #include "types.h"
 
-/**
- * Main entry point for the Source-engine-style movement system.
- *
- * Handles ground friction, acceleration, air strafing, bunny hopping, and
- * noclip.  Must be called AFTER update_mario_inputs() so that m->intendedYaw,
- * m->intendedMag, and m->input are current.
- *
- * Calls SM64's perform_ground_step() / perform_air_step() internally so that
- * wall/floor collision detection still works.
- */
+extern float gSrcMaxSpeed;
+extern float gSrcAccel;
+extern float gSrcAirAccel;
+extern float gSrcAirWishCap;
+extern float gSrcFriction;
+extern float gSrcStopSpeed;
+extern float gSrcJumpSpeed;
+extern float gSrcBhopSpeedCap;
+extern float gSrcWalkableNormal;
+extern float gSrcSurfMinNormal;
+extern float gSrcExtraGravity;
+extern float gSrcTerminalVel;
+extern float gSrcNoclipSpeed;
+extern int   gSrcBhopWindow;
+
 void src_fps_movement(struct MarioState *m);
 
 #endif

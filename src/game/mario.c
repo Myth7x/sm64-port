@@ -1369,20 +1369,22 @@ void update_mario_geometry_inputs(struct MarioState *m) {
         }
 
     } else {
-        struct Surface *centerFloor;
-        f32 centerHeight = find_floor(0.0f, 20000.0f, 0.0f, &centerFloor);
-        if (centerFloor != NULL) {
-            m->pos[0] = 0.0f;
-            m->pos[1] = centerHeight + 320.0f;
-            m->pos[2] = 0.0f;
-        } else {
-            level_trigger_warp(m, WARP_OP_DEATH);
+        if (!gFPSMode) {
+            struct Surface *centerFloor;
+            f32 centerHeight = find_floor(0.0f, 20000.0f, 0.0f, &centerFloor);
+            if (centerFloor != NULL) {
+                m->pos[0] = 0.0f;
+                m->pos[1] = centerHeight + 320.0f;
+                m->pos[2] = 0.0f;
+            } else {
+                level_trigger_warp(m, WARP_OP_DEATH);
+            }
+            m->vel[0] = 0.0f;
+            m->vel[1] = 0.0f;
+            m->vel[2] = 0.0f;
+            m->forwardVel = 0.0f;
+            m->floorHeight = find_floor(m->pos[0], m->pos[1], m->pos[2], &m->floor);
         }
-        m->vel[0] = 0.0f;
-        m->vel[1] = 0.0f;
-        m->vel[2] = 0.0f;
-        m->forwardVel = 0.0f;
-        m->floorHeight = find_floor(m->pos[0], m->pos[1], m->pos[2], &m->floor);
     }
 }
 

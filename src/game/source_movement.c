@@ -9,33 +9,23 @@
 #include "fps_camera.h"
 #include "source_movement.h"
 
-/* -----------------------------------------------------------------------
- * Physics constants
- *
- * All speed values are in SM64 world-units per game frame (30 fps).
- * SM64 unit ≈ 1 cm, so:
- *   SRC_MAX_SPEED  64 u/frame  = 1920 u/s ≈ 19 m/s  (fast walk / slow run)
- *   SRC_JUMP_SPEED 68 u/frame  = vertical launch speed,  ~1.7 m/s² above SM64 normal
- *
- * The sv_friction / sv_accelerate numbers match Valve defaults and are applied
- * per-frame below using dt = 1/30.
- * ----------------------------------------------------------------------- */
 #define DT (1.0f / 30.0f)
-#define SRC_MAX_SPEED       24.0f
-#define SRC_ACCEL           10.0f
-#define SRC_AIR_ACCEL       10.0f
-#define SRC_AIR_WISH_CAP    6.0f
-#define SRC_FRICTION        2.5f
-#define SRC_STOPSPEED       8.0f
-#define SRC_JUMP_SPEED      42.0f
-#define SRC_BHOP_SPEED_CAP  120.0f
-#define SRC_WALKABLE_NORMAL  0.7f
-#define SRC_SURF_MIN_NORMAL  0.05f
-#define SRC_EXTRA_GRAVITY   0.8f
-#define SRC_TERMINAL_VEL   -160.0f
-#define SRC_NOCLIP_SPEED    40.0f
-#define BHOP_WINDOW         4
-#define SPEED_EPSILON       0.01f
+#define SPEED_EPSILON 0.01f
+
+float gSrcMaxSpeed       = 24.0f;
+float gSrcAccel          = 10.0f;
+float gSrcAirAccel       = 10.0f;
+float gSrcAirWishCap     = 6.0f;
+float gSrcFriction       = 2.5f;
+float gSrcStopSpeed      = 8.0f;
+float gSrcJumpSpeed      = 42.0f;
+float gSrcBhopSpeedCap   = 120.0f;
+float gSrcWalkableNormal = 0.7f;
+float gSrcSurfMinNormal  = 0.05f;
+float gSrcExtraGravity   = 0.8f;
+float gSrcTerminalVel    = -160.0f;
+float gSrcNoclipSpeed    = 40.0f;
+int   gSrcBhopWindow     = 4;
 
 /* -----------------------------------------------------------------------
  * Per-frame persistent state
@@ -66,8 +56,8 @@ static void src_apply_friction(struct MarioState *m) {
         return;
     }
 
-    f32 control        = (speed < SRC_STOPSPEED) ? SRC_STOPSPEED : speed;
-    f32 frictionDelta  = control * SRC_FRICTION * DT;
+    f32 control        = (speed < gSrcStopSpeed) ? gSrcStopSpeed : speed;
+    f32 frictionDelta  = control * gSrcFriction * DT;
     f32 newSpeed       = speed - frictionDelta;
     if (newSpeed < 0.0f) newSpeed = 0.0f;
 
@@ -127,8 +117,8 @@ static void src_air_accelerate(struct MarioState *m,
                                f32 wishDirX, f32 wishDirZ,
                                f32 wishSpeed, f32 accel) {
     f32 wishSpd = wishSpeed;
-    if (wishSpd > SRC_AIR_WISH_CAP)
-        wishSpd = SRC_AIR_WISH_CAP;
+    if (wishSpd > gSrcAirWishCap)
+        wishSpd = gSrcAirWishCap;
 
     f32 currentSpeed = m->vel[0] * wishDirX + m->vel[2] * wishDirZ;
     f32 addSpeed     = wishSpd - currentSpeed;
@@ -208,7 +198,7 @@ static void src_ground_step(struct MarioState *m) {
     f32 mag = m->intendedMag / 32.0f;
     f32 wishDirX = sins(m->intendedYaw);
     f32 wishDirZ = coss(m->intendedYaw);
-    f32 wishSpeed = mag * SRC_MAX_SPEED;
+    f32 wishSpeed = mag * gSrcMaxSpeed;
 
     bool aHeld = (m->controller->buttonDown & A_BUTTON) != 0;
     bool justLanded = !sWasGrounded;
@@ -222,16 +212,16 @@ static void src_ground_step(struct MarioState *m) {
     }
 
     if (wishSpeed > SPEED_EPSILON) {
-        src_accelerate(m, wishDirX, wishDirZ, wishSpeed, SRC_ACCEL);
+        src_accelerate(m, wishDirX, wishDirZ, wishSpeed, gSrcAccel);
     }
 
-    f32 speedCap = isBhopFrame ? SRC_BHOP_SPEED_CAP : SRC_MAX_SPEED;
+    f32 speedCap = isBhopFrame ? gSrcBhopSpeedCap : gSrcMaxSpeed;
     src_clamp_horizontal_speed(m, speedCap);
 
     if (aHeld) {
-        m->vel[1] = SRC_JUMP_SPEED;
-        m->vel[1] -= SRC_EXTRA_GRAVITY;
-        if (m->vel[1] < SRC_TERMINAL_VEL) m->vel[1] = SRC_TERMINAL_VEL;
+        m->vel[1] = gSrcJumpSpeed;
+        m->vel[1] -= gSrcExtraGravity;
+        if (m->vel[1] < gSrcTerminalVel) m->vel[1] = gSrcTerminalVel;
         perform_air_step(m, 0);
         sWasGrounded = FALSE;
         //windows_show_message_box("Bhop!", "You performed a bunny hop!");
@@ -274,7 +264,7 @@ static void src_ground_step(struct MarioState *m) {
 static void src_air_step(struct MarioState *m) {
     if (m->controller->buttonDown & A_BUTTON) {
         sBhopBuffered = TRUE;
-        sBhopTimer    = BHOP_WINDOW;
+        sBhopTimer    = gSrcBhopWindow;
     } else if (sBhopTimer > 0) {
         sBhopTimer--;
         if (sBhopTimer == 0) {
@@ -285,7 +275,7 @@ static void src_air_step(struct MarioState *m) {
     f32 mag      = m->intendedMag / 32.0f;
     f32 wishDirX = sins(m->intendedYaw);
     f32 wishDirZ = coss(m->intendedYaw);
-    f32 wishSpeed = mag * SRC_MAX_SPEED;
+    f32 wishSpeed = mag * gSrcMaxSpeed;
 
     if (sOnSurf && m->floor != NULL) {
         f32 nx = m->floor->normal.x;
@@ -295,11 +285,11 @@ static void src_air_step(struct MarioState *m) {
         src_clip_velocity_along_surface(m, nx, ny, nz);
 
         if (mag > SPEED_EPSILON) {
-            src_air_accelerate(m, wishDirX, wishDirZ, wishSpeed, SRC_AIR_ACCEL);
+            src_air_accelerate(m, wishDirX, wishDirZ, wishSpeed, gSrcAirAccel);
         }
 
         m->vel[1] -= 4.0f;
-        if (m->vel[1] < SRC_TERMINAL_VEL) m->vel[1] = SRC_TERMINAL_VEL;
+        if (m->vel[1] < gSrcTerminalVel) m->vel[1] = gSrcTerminalVel;
 
         src_clip_velocity_along_surface(m, nx, ny, nz);
 
@@ -319,8 +309,8 @@ static void src_air_step(struct MarioState *m) {
 
         if (m->floor != NULL
             && m->pos[1] <= m->floorHeight + SURF_SNAP_DIST
-            && m->floor->normal.y >= SRC_SURF_MIN_NORMAL
-            && m->floor->normal.y < SRC_WALKABLE_NORMAL) {
+            && m->floor->normal.y >= gSrcSurfMinNormal
+            && m->floor->normal.y < gSrcWalkableNormal) {
             m->pos[1] = m->floorHeight;
             src_clip_velocity_along_surface(m,
                 m->floor->normal.x, m->floor->normal.y, m->floor->normal.z);
@@ -328,7 +318,7 @@ static void src_air_step(struct MarioState *m) {
             sWasGrounded = FALSE;
         } else if (m->floor != NULL
                 && m->pos[1] <= m->floorHeight + SURF_SNAP_DIST
-                && m->floor->normal.y >= SRC_WALKABLE_NORMAL) {
+                && m->floor->normal.y >= gSrcWalkableNormal) {
             m->pos[1] = m->floorHeight;
             sOnSurf      = FALSE;
             if (m->vel[1] < 0.0f) m->vel[1] = 0.0f;
@@ -340,20 +330,20 @@ static void src_air_step(struct MarioState *m) {
     }
 
     if (mag > SPEED_EPSILON) {
-        src_air_accelerate(m, wishDirX, wishDirZ, wishSpeed, SRC_AIR_ACCEL);
+        src_air_accelerate(m, wishDirX, wishDirZ, wishSpeed, gSrcAirAccel);
     }
 
-    src_clamp_horizontal_speed(m, SRC_BHOP_SPEED_CAP);
+    src_clamp_horizontal_speed(m, gSrcBhopSpeedCap);
 
-    m->vel[1] -= SRC_EXTRA_GRAVITY;
-    if (m->vel[1] < SRC_TERMINAL_VEL) m->vel[1] = SRC_TERMINAL_VEL;
+    m->vel[1] -= gSrcExtraGravity;
+    if (m->vel[1] < gSrcTerminalVel) m->vel[1] = gSrcTerminalVel;
 
     s32 stepResult = perform_air_step(m, 0);
 
     if (stepResult == AIR_STEP_LANDED) {
         if (m->floor != NULL &&
-            m->floor->normal.y >= SRC_SURF_MIN_NORMAL &&
-            m->floor->normal.y <  SRC_WALKABLE_NORMAL) {
+            m->floor->normal.y >= gSrcSurfMinNormal &&
+            m->floor->normal.y <  gSrcWalkableNormal) {
             src_clip_velocity_along_surface(m,
                 m->floor->normal.x,
                 m->floor->normal.y,
@@ -382,21 +372,21 @@ static void src_noclip_step(struct MarioState *m) {
     f32 strafe = m->controller->stickX / 64.0f;   /* +1 = D = right   */
 
     f32 cosP = coss(gFpsPitch);
-    m->pos[0] += sins(gFpsYaw) * cosP  * fwd    * SRC_NOCLIP_SPEED;
-    m->pos[1] += sins(gFpsPitch)       * fwd    * SRC_NOCLIP_SPEED;
-    m->pos[2] += coss(gFpsYaw) * cosP  * fwd    * SRC_NOCLIP_SPEED;
+    m->pos[0] += sins(gFpsYaw) * cosP  * fwd    * gSrcNoclipSpeed;
+    m->pos[1] += sins(gFpsPitch)       * fwd    * gSrcNoclipSpeed;
+    m->pos[2] += coss(gFpsYaw) * cosP  * fwd    * gSrcNoclipSpeed;
 
-    m->pos[0] += -coss(gFpsYaw) * strafe * SRC_NOCLIP_SPEED;
-    m->pos[2] +=  sins(gFpsYaw) * strafe * SRC_NOCLIP_SPEED;
+    m->pos[0] += -coss(gFpsYaw) * strafe * gSrcNoclipSpeed;
+    m->pos[2] +=  sins(gFpsYaw) * strafe * gSrcNoclipSpeed;
 
-    if (m->controller->buttonDown & A_BUTTON)  m->pos[1] += SRC_NOCLIP_SPEED;
-    if (m->controller->buttonDown & Z_TRIG)    m->pos[1] -= SRC_NOCLIP_SPEED;
+    if (m->controller->buttonDown & A_BUTTON)  m->pos[1] += gSrcNoclipSpeed;
+    if (m->controller->buttonDown & Z_TRIG)    m->pos[1] -= gSrcNoclipSpeed;
 
     m->vel[0] = m->vel[1] = m->vel[2] = 0.0f;
 
     // if space/jump is held, move upward at SRC_NOCLIP_SPEED regardless of camera pitch
     if (m->controller->buttonDown & A_BUTTON) {
-        m->pos[1] += SRC_NOCLIP_SPEED;
+        m->pos[1] += gSrcNoclipSpeed;
     }
 
     vec3f_copy(m->marioObj->header.gfx.pos, m->pos);
@@ -417,7 +407,7 @@ void src_fps_movement(struct MarioState *m) {
 
     bool onGround = (m->floor != NULL)
                  && (m->pos[1] <= m->floorHeight + 4.0f)
-                 && (m->floor->normal.y >= SRC_WALKABLE_NORMAL);
+                 && (m->floor->normal.y >= gSrcWalkableNormal);
 
     m->faceAngle[1] = gFpsYaw;
 

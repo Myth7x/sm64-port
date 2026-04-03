@@ -716,6 +716,11 @@ static void gfx_d3d11_end_frame(void) {
 static void gfx_d3d11_finish_render(void) {
 }
 
+static uintptr_t gfx_d3d11_get_imgui_tex_id(uint32_t texture_id) {
+    if (texture_id >= d3d.textures.size()) return 0;
+    return (uintptr_t)d3d.textures[texture_id].resource_view.Get();
+}
+
 } // namespace
 
 struct GfxRenderingAPI gfx_direct3d11_api = {
@@ -740,7 +745,8 @@ struct GfxRenderingAPI gfx_direct3d11_api = {
     gfx_d3d11_on_resize,
     gfx_d3d11_start_frame,
     gfx_d3d11_end_frame,
-    gfx_d3d11_finish_render
+    gfx_d3d11_finish_render,
+    gfx_d3d11_get_imgui_tex_id
 };
 
 #endif
