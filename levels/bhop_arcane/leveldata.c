@@ -14,3 +14,6 @@
 #include "levels/bhop_arcane/areas/1/1/model.inc.c"
 #include "levels/bhop_arcane/areas/1/collision.inc.c"
 #include "levels/bhop_arcane/areas/1/macro.inc.c"
+#define LEVEL_LIGHTING_NUM LEVEL_BHOP_ARCANE
+#include "levels/bhop_arcane/level_lighting.inc.c"
+#undef LEVEL_LIGHTING_NUM

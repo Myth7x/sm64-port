@@ -31,6 +31,7 @@ struct GfxRenderingAPI {
     void (*end_frame)(void);
     void (*finish_render)(void);
     uintptr_t (*get_imgui_tex_id)(uint32_t texture_id);
+    void (*clear_depth_stencil)(void);
 };
 
 #endif

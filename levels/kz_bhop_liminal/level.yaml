@@ -1,0 +1,11 @@
+short-name: kz_bhop_liminal
+full-name: kz_bhop_liminal
+texture-file: []
+area-count: 1
+objects: []
+shared-path: []
+skybox-bin: clouds
+texture-bin: generic
+effects: false
+actor-bins: []
+common-bin: []

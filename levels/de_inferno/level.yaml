@@ -1,0 +1,11 @@
+short-name: de_inferno
+full-name: de_inferno
+texture-file: []
+area-count: 1
+objects: []
+shared-path: []
+skybox-bin: water
+texture-bin: generic
+effects: false
+actor-bins: []
+common-bin: []

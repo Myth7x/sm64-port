@@ -4,6 +4,33 @@
 #if defined(__linux__) || defined(__APPLE__)
 #include <execinfo.h>
 #endif
+#if defined(_WIN32) || defined(_WIN64)
+#include <windows.h>
+#include <dbghelp.h>
+static LONG WINAPI win_veh(PEXCEPTION_POINTERS ep) {
+    PEXCEPTION_RECORD er = ep->ExceptionRecord;
+    PCONTEXT ctx = ep->ContextRecord;
+    fprintf(stderr, "\n=== UNHANDLED EXCEPTION ===\n");
+    fprintf(stderr, "Code:    0x%08lX\n", er->ExceptionCode);
+    fprintf(stderr, "Address: %p\n", (void *)er->ExceptionAddress);
+    if (er->ExceptionCode == EXCEPTION_ACCESS_VIOLATION && er->NumberParameters >= 2) {
+        fprintf(stderr, "AV type: %s  addr: %p\n",
+            er->ExceptionInformation[0] == 1 ? "WRITE" : "READ",
+            (void *)er->ExceptionInformation[1]);
+    }
+#if defined(_M_X64) || defined(__x86_64__)
+    fprintf(stderr, "RIP=%016llX  RSP=%016llX\n", (unsigned long long)ctx->Rip, (unsigned long long)ctx->Rsp);
+    fprintf(stderr, "RAX=%016llX  RBX=%016llX  RCX=%016llX  RDX=%016llX\n",
+        (unsigned long long)ctx->Rax, (unsigned long long)ctx->Rbx,
+        (unsigned long long)ctx->Rcx, (unsigned long long)ctx->Rdx);
+    fprintf(stderr, "RSI=%016llX  RDI=%016llX  R8 =%016llX  R9 =%016llX\n",
+        (unsigned long long)ctx->Rsi, (unsigned long long)ctx->Rdi,
+        (unsigned long long)ctx->R8,  (unsigned long long)ctx->R9);
+#endif
+    fflush(stderr);
+    return EXCEPTION_CONTINUE_SEARCH;
+}
+#endif
 
 static void crash_handler(int sig) {
 #if defined(__linux__) || defined(__APPLE__)
@@ -15,6 +42,7 @@ static void crash_handler(int sig) {
 #else
     fprintf(stderr, "\n=== SIGNAL %d ===\n", sig);
 #endif
+    fflush(stderr);
     _exit(1);
 }
 
@@ -51,7 +79,8 @@ static void crash_handler(int sig) {
 
 #include "compat.h"
 
-#include "../../sm64_queue/sm64_queue.h"
+#include "sm64_udp/manager.h"
+#include "sm64_udp/actor_manager.h"
 
 #define CONFIG_FILE "sm64config.txt"
 
@@ -99,10 +128,30 @@ void exec_display_list(struct SPTask *spTask) {
 #define SAMPLES_LOW 528
 #endif
 
+static void patch_interpolations(void) {
+    extern void mtx_patch_interpolated(void);
+    extern void patch_screen_transition_interpolated(void);
+    extern void patch_title_screen_scales(void);
+    extern void patch_interpolated_dialog(void);
+    extern void patch_interpolated_hud(void);
+    extern void patch_interpolated_paintings(void);
+    extern void patch_interpolated_bubble_particles(void);
+    extern void patch_interpolated_snow_particles(void);
+    mtx_patch_interpolated();
+    patch_screen_transition_interpolated();
+    patch_title_screen_scales();
+    patch_interpolated_dialog();
+    patch_interpolated_hud();
+    patch_interpolated_paintings();
+    patch_interpolated_bubble_particles();
+    patch_interpolated_snow_particles();
+}
+
 void produce_one_frame(void) {
     gfx_start_frame();
     game_loop_one_iteration();
-    sm64_queue_send_mario_state();
+    actor_manager_update();
+    udp_snapshot();
     
     int samples_left = audio_api->buffered();
     u32 num_audio_samples = samples_left < audio_api->get_desired_buffered() ? SAMPLES_HIGH : SAMPLES_LOW;
@@ -118,6 +167,11 @@ void produce_one_frame(void) {
     //printf("Audio samples before submitting: %d\n", audio_api->buffered());
     audio_api->play((u8 *)audio_buffer, 2 * num_audio_samples * 4);
     
+    gfx_end_frame();
+    
+    gfx_start_frame();
+    patch_interpolations();
+    exec_display_list(gGfxSPTask);
     gfx_end_frame();
 }
 
@@ -176,6 +230,9 @@ void main_func(void) {
 #ifdef SIGBUS
     signal(SIGBUS, crash_handler);
 #endif
+#if defined(_WIN32) || defined(_WIN64)
+    AddVectoredExceptionHandler(1, win_veh);
+#endif
 #ifdef USE_SYSTEM_MALLOC
     main_pool_init();
     gGfxAllocOnlyPool = alloc_only_pool_init();
@@ -187,7 +244,8 @@ void main_func(void) {
 
     configfile_load(CONFIG_FILE);
     atexit(save_config);
-    atexit(sm64_queue_shutdown);
+    atexit(udp_shutdown);
+    atexit(actor_manager_shutdown);
 
 #ifdef TARGET_WEB
     emscripten_set_main_loop(em_main_loop, 0, 0);
@@ -244,7 +302,8 @@ void main_func(void) {
     audio_init();
     sound_init();
 
-    sm64_queue_init();
+    udp_init();
+    actor_manager_init();
     thread5_game_loop(NULL);
 #ifdef TARGET_WEB
     /*for (int i = 0; i < atoi(argv[1]); i++) {

@@ -188,6 +188,7 @@ struct GfxRenderingAPI gfx_dummy_renderer_api = {
     gfx_dummy_renderer_start_frame,
     gfx_dummy_renderer_end_frame,
     gfx_dummy_renderer_finish_render,
-    NULL
+    NULL,  /* get_imgui_tex_id */
+    NULL,  /* clear_depth_stencil */
 };
 #endif

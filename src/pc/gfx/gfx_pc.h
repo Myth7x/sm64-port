@@ -34,6 +34,13 @@ void gfx_imgui_frame(void);
 uint32_t          gfx_texture_cache_count(void);
 GfxTextureCacheEntry gfx_texture_cache_entry(uint32_t idx);
 uintptr_t         gfx_get_imgui_tex_id(uint32_t texture_id);
+void              gfx_pc_get_proj_matrix(float out[4][4]);
+void              gfx_pc_get_ao_proj(float out[4][4]);
+
+uint32_t          gfx_combiner_pool_count(void);
+uint32_t          gfx_combiner_pool_cc_id(uint32_t idx);
+extern uint32_t   gfx_dbg_draw_calls;
+extern uint32_t   gfx_dbg_tris;
 
 #ifdef __cplusplus
 }

@@ -1,0 +1,13 @@
+#ifndef SKY3D_CAMERA_BHOP_WONDERLAND_H
+#define SKY3D_CAMERA_BHOP_WONDERLAND_H
+
+#define SKY3D_ORIGIN_X 0
+#define SKY3D_ORIGIN_Y -13888
+#define SKY3D_ORIGIN_Z 1568
+#define SKY3D_SCALE    16
+
+#ifndef __ASSEMBLER__
+#include <PR/gbi.h>
+#endif
+
+#endif /* SKY3D_CAMERA_BHOP_WONDERLAND_H */

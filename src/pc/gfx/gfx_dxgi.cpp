@@ -47,10 +47,10 @@ extern "C" {
 
 #ifdef VERSION_EU
 #define FRAME_INTERVAL_US_NUMERATOR 40000
-#define FRAME_INTERVAL_US_DENOMINATOR 1
+#define FRAME_INTERVAL_US_DENOMINATOR 2
 #else
 #define FRAME_INTERVAL_US_NUMERATOR 100000
-#define FRAME_INTERVAL_US_DENOMINATOR 3
+#define FRAME_INTERVAL_US_DENOMINATOR 6
 #endif
 
 using namespace Microsoft::WRL; // For ComPtr
@@ -219,7 +219,7 @@ static bool dxgi_do_capture(void) {
 static void dxgi_do_release(void) {
     ClipCursor(NULL);
     ReleaseCapture();
-    ShowCursor(TRUE);
+    while (ShowCursor(TRUE) < 0);
 }
 
 static bool s_raw_input_registered = false;
@@ -274,9 +274,13 @@ static LRESULT CALLBACK gfx_dxgi_wnd_proc(HWND h_wnd, UINT message, WPARAM w_par
             if (dxgi.showing_error) {
                 return DefWindowProcW(h_wnd, message, w_param, l_param);
             } else {
-                if (dxgi.run_one_game_iter != nullptr) {
+                static bool s_in_paint = false;
+                if (!s_in_paint && dxgi.run_one_game_iter != nullptr) {
+                    s_in_paint = true;
                     dxgi.run_one_game_iter();
+                    s_in_paint = false;
                 }
+                InvalidateRect(h_wnd, nullptr, FALSE);
             }
             break;
         case WM_ACTIVATEAPP:
@@ -430,11 +434,15 @@ static void gfx_dxgi_get_dimensions(uint32_t *width, uint32_t *height) {
 }
 
 static void gfx_dxgi_handle_events(void) {
-    /*MSG msg;
+    MSG msg;
     while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
+        if (msg.message == WM_PAINT) {
+            ValidateRect(msg.hwnd, nullptr);
+            continue;
+        }
         TranslateMessage(&msg);
         DispatchMessage(&msg);
-    }*/
+    }
 }
 
 static uint64_t qpc_to_us(uint64_t qpc) {

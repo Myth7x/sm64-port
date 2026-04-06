@@ -143,7 +143,7 @@ static const LevelScript script_L1[] = {
 };
 
 static const LevelScript script_L2[] = {
-    EXIT_AND_EXECUTE(/*seg*/ 0x0E, _surf_mentosSegmentRomStart, _surf_mentosSegmentRomEnd, level_surf_mentos_entry),
+    EXIT_AND_EXECUTE(/*seg*/ 0x0E, _bhop_fuckapoy2SegmentRomStart, _bhop_fuckapoy2SegmentRomEnd, level_bhop_fuckapoy2_entry),
 };
 
 static const LevelScript goto_mario_head_regular[] = {

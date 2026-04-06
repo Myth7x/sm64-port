@@ -1,0 +1,11 @@
+short-name: bhop_crab_game
+full-name: bhop_crab_game
+texture-file: []
+area-count: 1
+objects: []
+shared-path: []
+skybox-bin: clouds
+texture-bin: generic
+effects: false
+actor-bins: []
+common-bin: []

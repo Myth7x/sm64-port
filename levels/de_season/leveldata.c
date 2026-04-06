@@ -14,3 +14,8 @@
 #include "levels/de_season/areas/1/1/model.inc.c"
 #include "levels/de_season/areas/1/collision.inc.c"
 #include "levels/de_season/areas/1/macro.inc.c"
+#define LEVEL_LIGHTING_NUM LEVEL_DE_SEASON
+#include "levels/de_season/level_lighting.inc.c"
+#undef LEVEL_LIGHTING_NUM
+#include "levels/de_season/entities.inc.c"
+#include "levels/de_season/sky/sky_geo.inc.c"

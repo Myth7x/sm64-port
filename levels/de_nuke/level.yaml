@@ -1,0 +1,11 @@
+short-name: de_nuke
+full-name: de_nuke
+texture-file: []
+area-count: 1
+objects: []
+shared-path: []
+skybox-bin: clouds
+texture-bin: generic
+effects: false
+actor-bins: []
+common-bin: []

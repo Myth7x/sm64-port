@@ -55,6 +55,7 @@ void common_anchor_mario_behavior(f32 sp28, f32 sp2C, s32 sp30);
 void bhv_chuckya_loop(void);
 void bhv_chuckya_anchor_mario_loop(void);
 void bhv_rotating_platform_loop(void);
+void bhv_moving_platform_loop(void);
 void bhv_wf_breakable_wall_loop(void);
 void bhv_kickable_board_loop(void);
 void bhv_tower_door_loop(void);

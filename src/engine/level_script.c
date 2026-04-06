@@ -345,6 +345,7 @@ static void level_cmd_clear_level(void) {
 }
 
 static void level_cmd_alloc_level_pool(void) {
+    fprintf(stderr, "[level-script] alloc_level_pool: allocating level pool\n");
     if (sLevelPool == NULL) {
 #ifdef USE_SYSTEM_MALLOC
         sLevelPool = alloc_only_pool_init();
@@ -353,12 +354,13 @@ static void level_cmd_alloc_level_pool(void) {
                                           MEMORY_POOL_LEFT);
 #endif
     }
-
+    fprintf(stderr, "[level-script] alloc_level_pool: done\n");
     sCurrentCmd = CMD_NEXT;
 }
 
 static void level_cmd_free_level_pool(void) {
     s32 i;
+    fprintf(stderr, "[level-script] free_level_pool: freeing pool and allocating surface pools\n");
 
 #ifndef USE_SYSTEM_MALLOC
     alloc_only_pool_resize(sLevelPool, sLevelPool->usedSpace);
@@ -371,6 +373,7 @@ static void level_cmd_free_level_pool(void) {
             break;
         }
     }
+    fprintf(stderr, "[level-script] free_level_pool: done\n");
 
     sCurrentCmd = CMD_NEXT;
 }
@@ -378,6 +381,7 @@ static void level_cmd_free_level_pool(void) {
 static void level_cmd_begin_area(void) {
     u8 areaIndex = CMD_GET(u8, 2);
     void *geoLayoutAddr = CMD_GET(void *, 4);
+    fprintf(stderr, "[level-script] begin_area: area %d, processing geo layout\n", (int)areaIndex);
 
     if (areaIndex < 8) {
         struct GraphNodeRoot *screenArea =
@@ -629,14 +633,16 @@ static void level_cmd_set_terrain_data(void) {
 #ifndef NO_SEGMENTED_MEMORY
         gAreas[sCurrAreaIndex].terrainData = segmented_to_virtual(CMD_GET(void *, 4));
 #else
-        Collision *data;
-        u32 size;
-
-        // The game modifies the terrain data and must be reset upon level reload.
-        data = segmented_to_virtual(CMD_GET(void *, 4));
-        size = get_area_terrain_size(data) * sizeof(Collision);
+        Collision *data = segmented_to_virtual(CMD_GET(void *, 4));
+#ifdef USE_SYSTEM_MALLOC
+        gAreas[sCurrAreaIndex].terrainData = data;
+        fprintf(stderr, "[level-script] set_terrain_data: area %d using static terrain ptr %p\n",
+                sCurrAreaIndex, (void *)data);
+#else
+        u32 size = get_area_terrain_size(data) * sizeof(Collision);
         gAreas[sCurrAreaIndex].terrainData = alloc_only_pool_alloc(sLevelPool, size);
         memcpy(gAreas[sCurrAreaIndex].terrainData, data, size);
+#endif
 #endif
     }
     sCurrentCmd = CMD_NEXT;
@@ -671,8 +677,11 @@ static void level_cmd_set_macro_objects(void) {
 static void level_cmd_load_area(void) {
     s16 areaIndex = CMD_GET(u8, 2);
     UNUSED void *unused = (u8 *) sCurrentCmd + 4;
+    fprintf(stderr, "[level-script] load_area: loading area %d (level %d)\n",
+            (int)areaIndex, (int)gCurrLevelNum);
     stop_sounds_in_continuous_banks();
     load_area(areaIndex);
+    fprintf(stderr, "[level-script] load_area: area %d done\n", (int)areaIndex);
 
     sCurrentCmd = CMD_NEXT;
 }

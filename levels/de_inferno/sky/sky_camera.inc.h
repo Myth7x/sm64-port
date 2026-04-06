@@ -1,0 +1,13 @@
+#ifndef SKY3D_CAMERA_DE_INFERNO_H
+#define SKY3D_CAMERA_DE_INFERNO_H
+
+#define SKY3D_ORIGIN_X 26880
+#define SKY3D_ORIGIN_Y -261248
+#define SKY3D_ORIGIN_Z -61440
+#define SKY3D_SCALE    16
+
+#ifndef __ASSEMBLER__
+#include <PR/gbi.h>
+#endif
+
+#endif /* SKY3D_CAMERA_DE_INFERNO_H */

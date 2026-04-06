@@ -14,6 +14,8 @@
 #include "game/mario.h"
 #include "game/object_list_processor.h"
 #include "surface_load.h"
+#include "game/game_init.h"
+#include "math_util.h"
 
 s32 unused8038BE90;
 
@@ -135,33 +137,18 @@ void clear_static_surfaces(void) {
 static void add_surface_to_cell(s16 dynamic, s16 cellX, s16 cellZ, struct Surface *surface) {
     struct SurfaceNode *newNode = alloc_surface_node();
     struct SurfaceNode *list;
-    s16 surfacePriority;
-    s16 priority;
-    s16 sortDir;
     s16 listIndex;
 
     if (surface->normal.y > 0.01) {
         listIndex = SPATIAL_PARTITION_FLOORS;
-        sortDir = 1; // highest to lowest, then insertion order
     } else if (surface->normal.y < -0.01) {
         listIndex = SPATIAL_PARTITION_CEILS;
-        sortDir = -1; // lowest to highest, then insertion order
     } else {
         listIndex = SPATIAL_PARTITION_WALLS;
-        sortDir = 0; // insertion order
-
         if (surface->normal.x < -0.707 || surface->normal.x > 0.707) {
             surface->flags |= SURFACE_FLAG_X_PROJECTION;
         }
     }
-
-    //! (Surface Cucking) Surfaces are sorted by the height of their first
-    //  vertex. Since vertices aren't ordered by height, this causes many
-    //  lower triangles to be sorted higher. This worsens surface cucking since
-    //  many functions only use the first triangle in surface order that fits,
-    //  missing higher surfaces.
-    //  upperY would be a better sort method.
-    surfacePriority = surface->vertex1[1] * sortDir;
 
     newNode->surface = surface;
 
@@ -169,17 +156,6 @@ static void add_surface_to_cell(s16 dynamic, s16 cellX, s16 cellZ, struct Surfac
         list = &gDynamicSurfacePartition[cellZ][cellX][listIndex];
     } else {
         list = &gStaticSurfacePartition[cellZ][cellX][listIndex];
-    }
-
-    // Loop until we find the appropriate place for the surface in the list.
-    while (list->next != NULL) {
-        priority = list->next->surface->vertex1[1] * sortDir;
-
-        if (surfacePriority > priority) {
-            break;
-        }
-
-        list = list->next;
     }
 
     newNode->next = list->next;
@@ -305,7 +281,7 @@ UNUSED static void stub_surface_load_1(void) {
 }
 
 s32 surface_fill_from_data(struct Surface *surface, s16 *vertexData, s16 i0, s16 i1, s16 i2) {
-    s32 off1 = 3 * i0, off2 = 3 * i1, off3 = 3 * i2;
+    s32 off1 = 3 * (u16)i0, off2 = 3 * (u16)i1, off3 = 3 * (u16)i2;
     register s32 x1 = vertexData[off1], y1 = vertexData[off1 + 1], z1 = vertexData[off1 + 2];
     register s32 x2 = vertexData[off2], y2 = vertexData[off2 + 1], z2 = vertexData[off2 + 2];
     register s32 x3 = vertexData[off3], y3 = vertexData[off3 + 1], z3 = vertexData[off3 + 2];
@@ -397,6 +373,11 @@ static struct Surface *read_surface_data(s16 *vertexData, s16 **vertexIndices) {
 
     surface = alloc_surface();
 
+    vec3s_copy(surface->prevVertex1, surface->vertex1);
+    vec3s_copy(surface->prevVertex2, surface->vertex2);
+    vec3s_copy(surface->prevVertex3, surface->vertex3);
+    surface->modifiedTimestamp = gGlobalTimer;
+
     surface->vertex1[0] = x1;
     surface->vertex2[0] = x2;
     surface->vertex3[0] = x3;
@@ -479,7 +460,7 @@ static void load_static_surfaces(s16 **data, s16 *vertexData, s16 surfaceType, s
     s16 hasForce = surface_has_force(surfaceType);
     s16 flags = surf_has_no_cam_collision(surfaceType);
 
-    numSurfaces = *(*data);
+    numSurfaces = (u16)*(*data);
     *data += 1;
 
     for (i = 0; i < numSurfaces; i++) {
@@ -519,8 +500,8 @@ static s16 *read_vertex_data(s16 **data) {
     UNUSED s16 unused2[3];
     s16 *vertexData;
 
-    numVertices = *(*data);
-    (*data)++;
+    numVertices = (u16)*(*data);
+    (*data)++;;
 
     vertexData = *data;
     *data += 3 * numVertices;
@@ -592,7 +573,7 @@ u32 get_area_terrain_size(s16 *data) {
 
         switch (terrainLoadType) {
             case TERRAIN_LOAD_VERTICES:
-                numVertices = *data++;
+                numVertices = (u16)*data++;
                 data += 3 * numVertices;
                 break;
 
@@ -601,7 +582,7 @@ u32 get_area_terrain_size(s16 *data) {
                 break;
 
             case TERRAIN_LOAD_ENVIRONMENT:
-                numRegions = *data++;
+                numRegions = (u16)*data++;
                 data += 6 * numRegions;
                 break;
 
@@ -613,7 +594,7 @@ u32 get_area_terrain_size(s16 *data) {
                 break;
 
             default:
-                numSurfaces = *data++;
+                numSurfaces = (u16)*data++;
                 hasForce = surface_has_force(terrainLoadType);
                 data += (3 + hasForce) * numSurfaces;
                 break;

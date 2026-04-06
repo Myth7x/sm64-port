@@ -300,7 +300,8 @@ ifeq ($(TARGET_N64),1)
 else
   SRC_DIRS += src/pc src/pc/gfx src/pc/audio src/pc/controller
   ifneq ($(filter 1,$(TARGET_WINDOWS) $(TARGET_LINUX)),)
-    SRC_DIRS += imgui_menu sm64_queue
+    SRC_DIRS += imgui_menu
+    SRC_DIRS += sm64_udp
   endif
 endif
 BIN_DIRS := bin bin/$(VERSION)
@@ -478,7 +479,7 @@ PYTHON := python3
 # Platform-specific compiler and linker flags
 ifeq ($(TARGET_WINDOWS),1)
   PLATFORM_CFLAGS  := -DTARGET_WINDOWS
-  PLATFORM_LDFLAGS := -lm -lxinput9_1_0 -lole32 -lpthread -no-pie -mwindows
+  PLATFORM_LDFLAGS := -lm -lxinput9_1_0 -lole32 -lpthread -lws2_32 -lpsapi -no-pie -mwindows
 endif
 ifeq ($(TARGET_LINUX),1)
   PLATFORM_CFLAGS  := -DTARGET_LINUX `pkg-config --cflags libusb-1.0`
@@ -528,8 +529,12 @@ endif
 
 ASFLAGS := -I include -I $(BUILD_DIR) $(foreach d,$(DEFINES),--defsym $(d))
 
-ifneq ($(filter 1,$(TARGET_WINDOWS) $(TARGET_LINUX)),)
-  PLATFORM_LDFLAGS += -lrabbitmq
+ENABLE_AMQP ?= 0
+ifeq ($(ENABLE_AMQP),1)
+  ifneq ($(filter 1,$(TARGET_WINDOWS) $(TARGET_LINUX)),)
+    PLATFORM_CFLAGS  += -DENABLE_AMQP
+    PLATFORM_LDFLAGS += -lrabbitmq -llz4
+  endif
 endif
 
 LDFLAGS := $(PLATFORM_LDFLAGS) $(GFX_LDFLAGS)

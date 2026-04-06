@@ -35,7 +35,7 @@
 #define RATIO_X (gfx_current_dimensions.width / (2.0f * HALF_SCREEN_WIDTH))
 #define RATIO_Y (gfx_current_dimensions.height / (2.0f * HALF_SCREEN_HEIGHT))
 
-#define MAX_BUFFERED 1024
+#define MAX_BUFFERED 8192
 #define MAX_LIGHTS 2
 #define MAX_VERTICES 64
 
@@ -50,6 +50,7 @@ struct XYWidthHeight {
 struct LoadedVertex {
     float x, y, z, w;
     float u, v;
+    float wx, wy, wz;
     struct RGBA color;
     uint8_t clip_rej;
 };
@@ -66,8 +67,8 @@ struct TextureHashmapNode {
     int16_t width, height;
 };
 static struct {
-    struct TextureHashmapNode *hashmap[8192];
-    struct TextureHashmapNode pool[8192];
+    struct TextureHashmapNode *hashmap[32768];
+    struct TextureHashmapNode pool[32768];
     uint32_t pool_pos;
 } gfx_texture_cache;
 
@@ -80,6 +81,9 @@ struct ColorCombiner {
 static struct ColorCombiner color_combiner_pool[256];
 static uint16_t color_combiner_pool_size;
 
+uint32_t gfx_dbg_draw_calls = 0;
+uint32_t gfx_dbg_tris = 0;
+
 static uint8_t s_rgba32_buf[1048576];
 
 static struct RSP {
@@ -88,6 +92,7 @@ static struct RSP {
     
     float MP_matrix[4][4];
     float P_matrix[4][4];
+    float ao_proj[4][4];
     
     Light_t current_lights[MAX_LIGHTS + 1];
     float current_lights_coeffs[MAX_LIGHTS][3];
@@ -172,6 +177,8 @@ static unsigned long get_time(void) {
 static void gfx_flush(void) {
     if (buf_vbo_len > 0) {
         int num = buf_vbo_num_tris;
+        gfx_dbg_tris += buf_vbo_num_tris;
+        gfx_dbg_draw_calls++;
         unsigned long t0 = get_time();
         gfx_rapi->draw_triangles(buf_vbo, buf_vbo_len, buf_vbo_num_tris);
         buf_vbo_len = 0;
@@ -259,7 +266,7 @@ static struct ColorCombiner *gfx_lookup_or_create_color_combiner(uint32_t cc_id)
 
 static bool gfx_texture_cache_lookup(int tile, struct TextureHashmapNode **n, const uint8_t *orig_addr, uint32_t fmt, uint32_t siz) {
     size_t hash = (uintptr_t)orig_addr;
-    hash = (hash >> 5) & 0x1fff;
+    hash = (hash >> 5) & 0x7fff;
     struct TextureHashmapNode **node = &gfx_texture_cache.hashmap[hash];
     while (*node != NULL && *node - gfx_texture_cache.pool < (int)gfx_texture_cache.pool_pos) {
         if ((*node)->texture_addr == orig_addr && (*node)->fmt == fmt && (*node)->siz == siz) {
@@ -603,6 +610,10 @@ static void gfx_sp_matrix(uint8_t parameters, const int32_t *addr) {
     if (parameters & G_MTX_PROJECTION) {
         if (parameters & G_MTX_LOAD) {
             memcpy(rsp.P_matrix, matrix, sizeof(matrix));
+            // Perspective matrix has M[3][3] == 0; ortho has M[3][3] == 1.
+            // Only update ao_proj when we have a real perspective matrix.
+            if (fabsf(matrix[3][3]) < 0.5f)
+                memcpy(rsp.ao_proj, matrix, sizeof(matrix));
         } else {
             gfx_matrix_mul(rsp.P_matrix, matrix, rsp.P_matrix);
         }
@@ -646,6 +657,10 @@ static void gfx_sp_vertex(size_t n_vertices, size_t dest_index, const Vtx *verti
         float y = v->ob[0] * rsp.MP_matrix[0][1] + v->ob[1] * rsp.MP_matrix[1][1] + v->ob[2] * rsp.MP_matrix[2][1] + rsp.MP_matrix[3][1];
         float z = v->ob[0] * rsp.MP_matrix[0][2] + v->ob[1] * rsp.MP_matrix[1][2] + v->ob[2] * rsp.MP_matrix[2][2] + rsp.MP_matrix[3][2];
         float w = v->ob[0] * rsp.MP_matrix[0][3] + v->ob[1] * rsp.MP_matrix[1][3] + v->ob[2] * rsp.MP_matrix[2][3] + rsp.MP_matrix[3][3];
+
+        d->wx = v->ob[0];
+        d->wy = v->ob[1];
+        d->wz = v->ob[2];
         
         x = gfx_adjust_x_for_aspect_ratio(x);
         
@@ -952,6 +967,10 @@ static void gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t vtx3_idx) {
         buf_vbo[buf_vbo_len++] = color->g / 255.0f;
         buf_vbo[buf_vbo_len++] = color->b / 255.0f;
         buf_vbo[buf_vbo_len++] = color->a / 255.0f;*/
+
+        buf_vbo[buf_vbo_len++] = v_arr[i]->wx;
+        buf_vbo[buf_vbo_len++] = v_arr[i]->wy;
+        buf_vbo[buf_vbo_len++] = v_arr[i]->wz;
     }
     if (++buf_vbo_num_tris == MAX_BUFFERED) {
         gfx_flush();
@@ -1622,6 +1641,21 @@ static void gfx_run_dl(Gfx* cmd) {
             case G_SETCIMG:
                 gfx_dp_set_color_image(C0(21, 3), C0(19, 2), C0(0, 11), seg_addr(cmd->words.w1));
                 break;
+            case (uint8_t)G_NOOP:
+                if (cmd->words.w1 == 0x534B5944u) {
+                    gfx_flush();
+                    if (gfx_rapi->clear_depth_stencil) {
+                        static int s_skyd_count = 0;
+                        if (s_skyd_count < 5) {
+                            /* Use game's sky log — link against skybox3d */
+                            extern void sky_log(const char *fmt, ...);
+                            sky_log("[gfx_pc] SKYD depth-clear #%d\n", s_skyd_count);
+                        }
+                        s_skyd_count++;
+                        gfx_rapi->clear_depth_stencil();
+                    }
+                }
+                break;
         }
         ++cmd;
     }
@@ -1692,6 +1726,8 @@ void gfx_start_frame(void) {
 }
 
 void gfx_run(Gfx *commands) {
+    gfx_dbg_draw_calls = 0;
+    gfx_dbg_tris = 0;
     gfx_sp_reset();
     
     //puts("New frame");
@@ -1732,6 +1768,14 @@ void gfx_imgui_frame(void) {
     gfx_wapi->swap_buffers_end();
 }
 
+void gfx_pc_get_proj_matrix(float out[4][4]) {
+    memcpy(out, rsp.P_matrix, sizeof(rsp.P_matrix));
+}
+
+void gfx_pc_get_ao_proj(float out[4][4]) {
+    memcpy(out, rsp.ao_proj, sizeof(rsp.ao_proj));
+}
+
 uint32_t gfx_texture_cache_count(void) {
     return gfx_texture_cache.pool_pos;
 }
@@ -1750,5 +1794,15 @@ GfxTextureCacheEntry gfx_texture_cache_entry(uint32_t idx) {
 uintptr_t gfx_get_imgui_tex_id(uint32_t texture_id) {
     if (gfx_rapi && gfx_rapi->get_imgui_tex_id)
         return gfx_rapi->get_imgui_tex_id(texture_id);
+    return 0;
+}
+
+uint32_t gfx_combiner_pool_count(void) {
+    return color_combiner_pool_size;
+}
+
+uint32_t gfx_combiner_pool_cc_id(uint32_t idx) {
+    if (idx < color_combiner_pool_size)
+        return color_combiner_pool[idx].cc_id;
     return 0;
 }

@@ -255,7 +255,7 @@ static bool wgl_do_capture(void) {
 static void wgl_do_release(void) {
     ClipCursor(NULL);
     ReleaseCapture();
-    ShowCursor(TRUE);
+    while (ShowCursor(TRUE) < 0);
     (void)unregister_raw_mouse;
 }
 

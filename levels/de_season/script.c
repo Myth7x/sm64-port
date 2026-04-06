@@ -20,7 +20,7 @@
 const LevelScript level_de_season_entry[] = {
 	INIT_LEVEL(),
 	LOAD_MIO0(0x07, _de_season_segment_7SegmentRomStart, _de_season_segment_7SegmentRomEnd), 
-	LOAD_MIO0(0x0A, _water_skybox_mio0SegmentRomStart, _water_skybox_mio0SegmentRomEnd), 
+	LOAD_MIO0(0x0A, _clouds_skybox_mio0SegmentRomStart, _clouds_skybox_mio0SegmentRomEnd), 
 	ALLOC_LEVEL_POOL(),
 	MARIO(MODEL_MARIO, 0x00000001, bhvMario), 
 	/* Fast64 begin persistent block [level commands] */
@@ -36,6 +36,8 @@ const LevelScript level_de_season_entry[] = {
 	END_AREA(),
 	FREE_LEVEL_POOL(),    MARIO_POS(0x01, 0, 1334, -48, -3904),
 	CALL(0, lvl_init_or_update),
+	CALL(0, de_season_sky_init),
+		CALL(0, de_season_entities_init),
 	CALL_LOOP(1, lvl_init_or_update),
 	CLEAR_LEVEL(),
 	SLEEP_BEFORE_EXIT(1),

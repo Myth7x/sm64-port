@@ -1321,8 +1321,10 @@ void update_mario_geometry_inputs(struct MarioState *m) {
     f32 gasLevel;
     f32 ceilToFloorDist;
 
-    f32_find_wall_collision(&m->pos[0], &m->pos[1], &m->pos[2], 60.0f, 50.0f);
-    f32_find_wall_collision(&m->pos[0], &m->pos[1], &m->pos[2], 30.0f, 24.0f);
+    if (!gFPSMode) {
+        f32_find_wall_collision(&m->pos[0], &m->pos[1], &m->pos[2], 60.0f, 50.0f);
+        f32_find_wall_collision(&m->pos[0], &m->pos[1], &m->pos[2], 30.0f, 24.0f);
+    }
 
     m->floorHeight = find_floor(m->pos[0], m->pos[1], m->pos[2], &m->floor);
 
@@ -1330,7 +1332,7 @@ void update_mario_geometry_inputs(struct MarioState *m) {
     // and check for the floor there.
     // This can cause errant behavior when combined with astral projection,
     // since the graphical position was not Mario's previous location.
-    if (m->floor == NULL) {
+    if (m->floor == NULL && !gFPSMode) {
         vec3f_copy(m->pos, m->marioObj->header.gfx.pos);
         m->floorHeight = find_floor(m->pos[0], m->pos[1], m->pos[2], &m->floor);
     }
@@ -1742,9 +1744,7 @@ s32 execute_mario_action(UNUSED struct Object *o) {
 
         /* --- FPS Stage 2: Source physics replaces the SM64 action dispatch loop --- */
         if (gFPSMode) {
-            if (gNoclipMode || gMarioState->floor != NULL) {
-                src_fps_movement(gMarioState);
-            }
+            src_fps_movement(gMarioState);
             update_mario_health(gMarioState);
             update_mario_info_for_cam(gMarioState);
             mario_update_hitbox_and_cap_model(gMarioState);

@@ -31,7 +31,7 @@ s16 gFpsPitch = 0;
 #define FPS_SENSITIVITY_Y 18.0f
 #define FPS_PITCH_MAX  0x3800
 #define FPS_PITCH_MIN -0x3800
-#define FPS_EYE_HEIGHT 155.0f
+#define FPS_EYE_HEIGHT 128.0f
 
 /* -----------------------------------------------------------------------
  * Toggle helpers

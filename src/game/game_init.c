@@ -793,8 +793,7 @@ void game_loop_one_iteration(void) {
         while (!atomic_load_explicit(&sWorkDone, memory_order_acquire)) {
             sched_yield();
             clock_t now = clock();
-            s32 waitMs = (s32) (((now - waitStart) * 1000) / CLOCKS_PER_SEC);
-            if (waitMs >= 100 && (now - uiTick) * 1000 / CLOCKS_PER_SEC >= 16) {
+            if ((now - uiTick) * 1000 / CLOCKS_PER_SEC >= 16) {
                 gfx_imgui_frame();
                 uiTick = now;
             }

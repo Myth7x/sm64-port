@@ -4,7 +4,7 @@ texture-file: []
 area-count: 1
 objects: []
 shared-path: []
-skybox-bin: clouds
+skybox-bin: ssl
 texture-bin: generic
 effects: false
 actor-bins: []

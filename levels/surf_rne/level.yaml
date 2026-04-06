@@ -1,0 +1,11 @@
+short-name: surf_rne
+full-name: surf_rne
+texture-file: []
+area-count: 1
+objects: []
+shared-path: []
+skybox-bin: clouds
+texture-bin: generic
+effects: false
+actor-bins: []
+common-bin: []

@@ -684,6 +684,15 @@ const BehaviorScript bhvRotatingPlatform[] = {
     END_LOOP(),
 };
 
+const BehaviorScript bhvCustomMovingPlatform[] = {
+    BEGIN(OBJ_LIST_SURFACE),
+    OR_INT(oFlags, OBJ_FLAG_UPDATE_GFX_POS_AND_ANGLE),
+    SET_HOME(),
+    BEGIN_LOOP(),
+        CALL_NATIVE(bhv_moving_platform_loop),
+    END_LOOP(),
+};
+
 const BehaviorScript bhvTower[] = {
     BEGIN(OBJ_LIST_SURFACE),
     OR_INT(oFlags, OBJ_FLAG_UPDATE_GFX_POS_AND_ANGLE),

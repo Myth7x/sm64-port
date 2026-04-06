@@ -1,0 +1,59 @@
+#ifndef XC_KANJI_V1_0_HEADER_H
+#define XC_KANJI_V1_0_HEADER_H
+
+#include "types.h"
+
+extern const GeoLayout xc_kanji_v1_0_area_1_geo[];
+extern const GeoLayout xc_kanji_v1_0_area_1[];
+extern const Collision xc_kanji_v1_0_area_1_collision[];
+extern const MacroObject xc_kanji_v1_0_area_1_macro_objs[];
+extern Lights1 xc_kanji_v1_0_dl_dev_dev_water2_cheap_h_001_lights;
+extern Lights1 xc_kanji_v1_0_dl_dev_dev_water2_h_001_lights;
+extern Lights1 xc_kanji_v1_0_dl_dev_dev_waterbeneath2_001_lights;
+extern Lights1 xc_kanji_v1_0_dl_realworldtextures2_ceiling_ceiling_01_h_001_lights;
+extern Lights1 xc_kanji_v1_0_dl_realworldtextures2_concrete_concrete_36_h_001_lights;
+extern Lights1 xc_kanji_v1_0_dl_realworldtextures_floor_floor_5_h_001_lights;
+extern u8 xc_kanji_v1_0_dl_ceiling_01_rgba16[];
+extern u8 xc_kanji_v1_0_dl_concrete_36_rgba16[];
+extern u8 xc_kanji_v1_0_dl_floor_5_rgba16[];
+extern Vtx xc_kanji_v1_0_dl_dev_dev_water2_cheap_h_mesh_layer_1_vtx_cull[8];
+extern Vtx xc_kanji_v1_0_dl_dev_dev_water2_cheap_h_mesh_layer_1_vtx_0[868];
+extern Gfx xc_kanji_v1_0_dl_dev_dev_water2_cheap_h_mesh_layer_1_tri_0[];
+extern Vtx xc_kanji_v1_0_dl_dev_dev_water2_h_mesh_layer_1_vtx_cull[8];
+extern Vtx xc_kanji_v1_0_dl_dev_dev_water2_h_mesh_layer_1_vtx_0[847];
+extern Gfx xc_kanji_v1_0_dl_dev_dev_water2_h_mesh_layer_1_tri_0[];
+extern Vtx xc_kanji_v1_0_dl_dev_dev_waterbeneath2_mesh_layer_1_vtx_cull[8];
+extern Vtx xc_kanji_v1_0_dl_dev_dev_waterbeneath2_mesh_layer_1_vtx_0[1711];
+extern Gfx xc_kanji_v1_0_dl_dev_dev_waterbeneath2_mesh_layer_1_tri_0[];
+extern Vtx xc_kanji_v1_0_dl_realworldtextures2_ceiling_ceiling_01_h_mesh_layer_1_vtx_cull[8];
+extern Vtx xc_kanji_v1_0_dl_realworldtextures2_ceiling_ceiling_01_h_mesh_layer_1_vtx_0[6021];
+extern Gfx xc_kanji_v1_0_dl_realworldtextures2_ceiling_ceiling_01_h_mesh_layer_1_tri_0[];
+extern Vtx xc_kanji_v1_0_dl_realworldtextures2_concrete_concrete_36_h_mesh_layer_1_vtx_cull[8];
+extern Vtx xc_kanji_v1_0_dl_realworldtextures2_concrete_concrete_36_h_mesh_layer_1_vtx_0[140283];
+extern Gfx xc_kanji_v1_0_dl_realworldtextures2_concrete_concrete_36_h_mesh_layer_1_tri_0[];
+extern Vtx xc_kanji_v1_0_dl_realworldtextures_floor_floor_5_h_mesh_layer_1_vtx_cull[8];
+extern Vtx xc_kanji_v1_0_dl_realworldtextures_floor_floor_5_h_mesh_layer_1_vtx_0[7792];
+extern Gfx xc_kanji_v1_0_dl_realworldtextures_floor_floor_5_h_mesh_layer_1_tri_0[];
+extern Gfx mat_xc_kanji_v1_0_dl_dev_dev_water2_cheap_h_001[];
+extern Gfx mat_revert_xc_kanji_v1_0_dl_dev_dev_water2_cheap_h_001[];
+extern Gfx mat_xc_kanji_v1_0_dl_dev_dev_water2_h_001[];
+extern Gfx mat_revert_xc_kanji_v1_0_dl_dev_dev_water2_h_001[];
+extern Gfx mat_xc_kanji_v1_0_dl_dev_dev_waterbeneath2_001[];
+extern Gfx mat_revert_xc_kanji_v1_0_dl_dev_dev_waterbeneath2_001[];
+extern Gfx mat_xc_kanji_v1_0_dl_realworldtextures2_ceiling_ceiling_01_h_001[];
+extern Gfx mat_revert_xc_kanji_v1_0_dl_realworldtextures2_ceiling_ceiling_01_h_001[];
+extern Gfx mat_xc_kanji_v1_0_dl_realworldtextures2_concrete_concrete_36_h_001[];
+extern Gfx mat_revert_xc_kanji_v1_0_dl_realworldtextures2_concrete_concrete_36_h_001[];
+extern Gfx mat_xc_kanji_v1_0_dl_realworldtextures_floor_floor_5_h_001[];
+extern Gfx mat_revert_xc_kanji_v1_0_dl_realworldtextures_floor_floor_5_h_001[];
+extern Gfx xc_kanji_v1_0_dl_dev_dev_water2_cheap_h_mesh_layer_1[];
+extern Gfx xc_kanji_v1_0_dl_dev_dev_water2_h_mesh_layer_1[];
+extern Gfx xc_kanji_v1_0_dl_dev_dev_waterbeneath2_mesh_layer_1[];
+extern Gfx xc_kanji_v1_0_dl_realworldtextures2_ceiling_ceiling_01_h_mesh_layer_1[];
+extern Gfx xc_kanji_v1_0_dl_realworldtextures2_concrete_concrete_36_h_mesh_layer_1[];
+extern Gfx xc_kanji_v1_0_dl_realworldtextures_floor_floor_5_h_mesh_layer_1[];
+extern Gfx xc_kanji_v1_0_dl_final_revert_mesh_layer_1[];
+
+extern const LevelScript level_xc_kanji_v1_0_entry[];
+
+#endif

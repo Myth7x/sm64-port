@@ -27,10 +27,11 @@
 #endif
 #include "level_table.h"
 #include "course_table.h"
+#include "skybox3d.h"
 #include "rumble_init.h"
 #include "fps_mode.h"
 #include "platform_displacement.h"
-#include <stdio.h>
+#include "entity_boxes.h"
 
 #define PLAY_MODE_NORMAL 0
 #define PLAY_MODE_PAUSED 2
@@ -163,10 +164,15 @@ struct CreditsEntry sCreditsSequence[] = {
     //{ LEVEL_CASTLE_GROUNDS, 1, 1, -128, { 0, 906, -1200 }, NULL },
     { LEVEL_BHOP_FUCKAPOY2, 1, 1, -128, { 0, 0, 0 }, NULL },
     { LEVEL_BHOP_ARCANE, 1, 1, -128, { 0, 0, 0 }, NULL },
-    { LEVEL_SURF_MENTOS, 1, 1, -128, { 0, 0, 0 }, NULL },
     { LEVEL_DE_DUST2, 1, 1, -128, { 0, 0, 0 }, NULL },
     { LEVEL_SURF_MESA, 1, 1, -128, { 0, 0, 0 }, NULL },
     { LEVEL_DE_SEASON, 1, 1, -128, { 0, 0, 0 }, NULL },
+    { LEVEL_DE_MARIEN, 1, 1, -128, { 0, 0, 0 }, NULL },
+    { LEVEL_BHOP_CRAB_GAME, 1, 1, -128, { 0, 0, 0 }, NULL },
+    { LEVEL_MG_RETROLAND_FIX, 1, 1, -128, { 0, 0, 0 }, NULL },
+    { LEVEL_KZ_BHOP_LIMINAL, 1, 1, -128, { 0, 0, 0 }, NULL },
+    { LEVEL_BHOP_WONDERLAND, 1, 1, -128, { 0, 0, 0 }, NULL },
+    { LEVEL_SURF_RNE, 1, 1, -128, { 0, 0, 0 }, NULL },
     { LEVEL_NONE, 0, 1, 0, { 0, 0, 0 }, NULL },
 };
 
@@ -490,8 +496,7 @@ void warp_area(void) {
 
 // used for warps between levels
 void warp_level(void) {
-    fprintf(stderr,
-            "[warp] warp_level apply oldLevel=%d newLevel=%d area=%d node=0x%02X\n",
+    sky_log("[warp] warp_level apply oldLevel=%d newLevel=%d area=%d node=0x%02X\n",
             (int)gCurrLevelNum,
             (int)sWarpDest.levelNum,
             (int)sWarpDest.areaIdx,
@@ -651,8 +656,7 @@ void initiate_warp(s16 destLevel, s16 destArea, s16 destWarpNode, s32 arg3) {
     sWarpDest.nodeId = destWarpNode;
     sWarpDest.arg = arg3;
 
-    fprintf(stderr,
-            "[warp] initiate currentLevel=%d currentArea=%d destLevel=%d destArea=%d destNode=0x%02X type=%d arg=%d\n",
+    sky_log("[warp] initiate currentLevel=%d currentArea=%d destLevel=%d destArea=%d destNode=0x%02X type=%d arg=%d\n",
             (int)gCurrLevelNum,
             (int)(gCurrentArea != NULL ? gCurrentArea->index : -1),
             (int)destLevel,
@@ -1033,6 +1037,7 @@ s32 play_mode_normal(void) {
     }
 
     area_update_objects();
+    entity_boxes_update(gMarioState);
     update_hud_values();
 
     if (gCurrentArea != NULL) {
@@ -1046,8 +1051,7 @@ s32 play_mode_normal(void) {
     // warp, change play mode accordingly.
     if (sCurrPlayMode == PLAY_MODE_NORMAL) {
         if (sWarpDest.type == WARP_TYPE_CHANGE_LEVEL) {
-            fprintf(stderr,
-                    "[warp] play_mode_normal queued level change destLevel=%d area=%d node=0x%02X\n",
+            sky_log("[warp] play_mode_normal queued level change destLevel=%d area=%d node=0x%02X\n",
                     (int)sWarpDest.levelNum,
                     (int)sWarpDest.areaIdx,
                     (unsigned int)((u8)sWarpDest.nodeId));
@@ -1156,8 +1160,7 @@ s32 play_mode_change_level(void) {
         sTransitionUpdate = NULL;
 
         if (sWarpDest.type != WARP_TYPE_NOT_WARPING) {
-            fprintf(stderr,
-                    "[warp] change-level transition complete nextLevel=%d area=%d node=0x%02X\n",
+            sky_log("[warp] change-level transition complete nextLevel=%d area=%d node=0x%02X\n",
                     (int)sWarpDest.levelNum,
                     (int)sWarpDest.areaIdx,
                     (unsigned int)((u8)sWarpDest.nodeId));
@@ -1219,7 +1222,8 @@ s32 update_level(void) {
 s32 init_level(void) {
     s32 val4 = 0;
 
-    fprintf(stderr, "[level-init] init_level() called - initializing level %d\n", (int)gCurrLevelNum);
+    sky3d_clear();
+    sky_log("[level-init] init_level() called - level %d\n", (int)gCurrLevelNum);
     gFPSMode = TRUE; // always keep FPS mode active on every level load
 
     set_play_mode(PLAY_MODE_NORMAL);
@@ -1302,7 +1306,7 @@ s32 lvl_init_or_update(s16 initOrUpdate, UNUSED s32 unused) {
     return result;
 }
 
-s16 sLevelToLoad = LEVEL_DE_DUST2;
+s16 sLevelToLoad = LEVEL_SURF_RNE;
 
 /**
  * Quickstart: skips the title screen, intro, and file-select.
@@ -1315,7 +1319,7 @@ s16 sLevelToLoad = LEVEL_DE_DUST2;
  */
 s32 lvl_quickstart(UNUSED s16 arg, UNUSED s32 levelNum) {
     if (sLevelToLoad <= LEVEL_NONE || sLevelToLoad >= LEVEL_COUNT) {
-        sLevelToLoad = LEVEL_DE_DUST2;
+        sLevelToLoad = LEVEL_SURF_RNE;
     }
 
     gCurrSaveFileNum = 1;
@@ -1409,27 +1413,27 @@ static void game_teardown_level_state(void) {
     sDelayedWarpOp = WARP_OP_NONE;
     sTransitionTimer = 0;
     D_80339EE0 = 0;
-    fprintf(stderr, "[teardown] reset transition state\n");
+    sky_log("[teardown] reset transition state\n");
 }
 
 void game_teardown_level(void) {
-    fprintf(stderr, "[teardown] begin safe level transition\n");
+    sky_log("[teardown] begin safe level transition\n");
     game_teardown_level_state();
-    fprintf(stderr, "[teardown] engine will clear/load via level script\n");
+    sky_log("[teardown] engine will clear/load via level script\n");
 }
 
 s32 game_prepare_level_load(s16 levelNum) {
     if (levelNum == LEVEL_NONE || levelNum >= LEVEL_COUNT) {
-        fprintf(stderr, "[load-prep] invalid level %d\n", (int)levelNum);
+        sky_log("[load-prep] invalid level %d\n", (int)levelNum);
         return 0;
     }
 
-    fprintf(stderr, "[load-prep] preparing to load level %d\n", (int)levelNum);
+    sky_log("[load-prep] preparing to load level %d\n", (int)levelNum);
     sLevelToLoad = levelNum;
     
     game_teardown_level();
     
-    fprintf(stderr, "[load-prep] requesting hard reinit for level %d\n", (int)levelNum);
+    sky_log("[load-prep] requesting hard reinit for level %d\n", (int)levelNum);
     game_request_hard_reinit(levelNum);
 
     return 1;

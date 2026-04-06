@@ -14,3 +14,7 @@
 #include "levels/surf_mesa/areas/1/1/model.inc.c"
 #include "levels/surf_mesa/areas/1/collision.inc.c"
 #include "levels/surf_mesa/areas/1/macro.inc.c"
+#define LEVEL_LIGHTING_NUM LEVEL_SURF_MESA
+#include "levels/surf_mesa/level_lighting.inc.c"
+#undef LEVEL_LIGHTING_NUM
+#include "levels/surf_mesa/entities.inc.c"
